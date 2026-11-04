@@ -165,7 +165,6 @@ export default function WordPressPostDetail() {
       publisher: { '@type': 'Organization', name: site.name, url: site.url },
       ...(image ? { image: image.url } : {}),
       mainEntityOfPage: canonical,
-      isBasedOn: post.link,
       isAccessibleForFree: true,
     },
   ];
@@ -246,18 +245,6 @@ export default function WordPressPostDetail() {
                 <div>
                   <p className="eyebrow mb-3 text-terracotta">Published</p>
                   <p className="text-sm text-ink/65">{formatDate(post.date)}</p>
-                </div>
-                <div>
-                  <p className="eyebrow mb-3 text-terracotta">Source</p>
-                  <a
-                    href={post.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-ink/65 transition-colors hover:text-terracotta"
-                  >
-                    Original WordPress post
-                    <ArrowUpRight className="size-3.5" />
-                  </a>
                 </div>
               </div>
             </aside>

@@ -22,10 +22,6 @@ export const site = {
     tiktok: 'https://www.tiktok.com/@walkingshadowpoetry',
     whatsapp: 'https://wa.me/254748458629',
   },
-  external: {
-    blog: 'https://walkingshadowpoetry.com/blog/',
-    shop: 'https://walkingshadowpoetry.com/shop/',
-  },
 } as const;
 
 export const navLinks = [

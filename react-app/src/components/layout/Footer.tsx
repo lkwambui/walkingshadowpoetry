@@ -174,15 +174,6 @@ export default function Footer() {
           </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span>Photography and words from the Walking Shadow archive</span>
-            <a
-              href={site.external.blog}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 transition-colors hover:text-ivory"
-            >
-              Original journal
-              <ArrowUpRight className="size-3" strokeWidth={1.5} />
-            </a>
             <button
               type="button"
               onClick={() =>
