@@ -1,4 +1,5 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { Component } from 'react';
+import type { ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -6,50 +7,40 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  state: State = { hasError: false };
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(): State {
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, info);
+    console.error('Walking Shadow Poetry runtime error', error, info);
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '60vh',
-            padding: 48,
-            textAlign: 'center',
-          }}
-        >
-          <h1 style={{ marginBottom: 16 }}>Something went wrong</h1>
-          <p style={{ color: 'var(--color-text-light)', marginBottom: 24 }}>
-            {this.state.error?.message || 'An unexpected error occurred.'}
+        <div className="flex min-h-screen flex-col items-center justify-center bg-ivory px-6 text-center text-ink">
+          <p className="eyebrow mb-6 text-terracotta">Something went quiet</p>
+          <h1 className="max-w-xl font-display text-5xl leading-none sm:text-7xl">
+            The page lost its thread.
+          </h1>
+          <p className="mt-6 max-w-md text-sm text-ink/60">
+            Please refresh the page or return home. If the problem continues, reach us at{' '}
+            <a className="link-underline text-terracotta" href="mailto:precoiusowoko@gmail.com">
+              precoiusowoko@gmail.com
+            </a>
+            .
           </p>
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              this.setState({ hasError: false, error: null });
-              window.location.href = '/';
-            }}
+          <a
+            href="/"
+            className="mt-10 border border-ink px-7 py-4 text-[0.68rem] uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-ivory"
           >
-            Go Home
-          </button>
+            Return home
+          </a>
         </div>
       );
     }

@@ -1,259 +1,360 @@
+import { ArrowUpRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
-import { aboutPosts, categories, site } from '../data/content';
+import BookingCTA from '../components/home/BookingCTA';
+import Container from '../components/common/Container';
+import ImageWithFallback from '../components/common/ImageWithFallback';
+import PageHero from '../components/common/PageHero';
+import PageTransition from '../components/common/PageTransition';
+import Reveal from '../components/common/Reveal';
+import SectionHeading from '../components/common/SectionHeading';
+import SEO from '../components/common/SEO';
+import { aboutPrinciples, milestones, mission, site, values } from '../data/site';
+
+const breadcrumbs = [
+  { label: 'Home', path: '/' },
+  { label: 'Our Story' },
+];
+
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    ...(item.path ? { item: `${site.url}${item.path}` } : {}),
+  })),
+};
 
 export default function About() {
   return (
-    <>
+    <PageTransition>
       <SEO
-        title="About Us"
-        description="Learn about Walking Shadow Poetry - our mission, values, and the story behind our name. We lend a voice to the voiceless through poetry and spoken word."
-        canonical="https://walkingshadowpoetry.com/about"
+        title="Our Story"
+        description="Walking Shadow Poetry began in Nakuru, Kenya on 19 June 2021. Discover the story, values and people behind a platform where words give resilience a voice."
+        path="/about"
+        image="/media/about/about-story.webp"
+        jsonLd={breadcrumbLd}
       />
 
-      {/* Page Header */}
-      <section
-        style={{
-          background: 'linear-gradient(135deg, var(--color-gray-900), #1a1a2e)',
-          padding: '80px 0 64px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: '-50%',
-            right: '-10%',
-            width: '60%',
-            height: '60%',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, var(--color-primary) 0%, transparent 70%)',
-            opacity: 0.1,
-          }}
-        />
-        <div className="container" style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <h1 style={{ color: 'var(--color-white)', marginBottom: 8 }}>About Us</h1>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: '0.95rem' }}>
-            <Link to="/" style={{ color: 'var(--color-gray-300)' }}>Home</Link>
-            <span style={{ color: 'var(--color-gray-500)' }}>-</span>
-            <span style={{ color: 'var(--color-primary)' }}>About Us</span>
+      <PageHero
+        eyebrow={`Since ${site.founded} · Nakuru, Kenya`}
+        title={
+          <>
+            Our <em className="text-sand">Story</em>
+          </>
+        }
+        intro="A platform where words take you on a journey and give resilience a voice. We are more than poetry — we are a record of the strength of the human spirit."
+        image="/media/about/about-story.webp"
+        imageAlt="A creative portrait from the Walking Shadow Poetry archive"
+        breadcrumbs={breadcrumbs}
+        size="lg"
+      />
+
+      <section className="bg-ivory py-24 text-ink sm:py-32 lg:py-40">
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+            <Reveal className="lg:col-span-4">
+              <p className="eyebrow text-terracotta">The beginning</p>
+              <p className="mt-7 font-display text-[clamp(2rem,3.5vw,3.2rem)] leading-[1.02]">
+                We started on <em className="text-terracotta">19 June 2021</em> with a conviction
+                that words can change a life.
+              </p>
+            </Reveal>
+            <Reveal delay={0.12} className="lg:col-span-7 lg:col-start-6">
+              <div className="space-y-6 text-[0.95rem] leading-[1.9] text-ink/70 sm:text-base">
+                <p className="drop-cap text-ink/80">
+                  Walking Shadow Poetry is a platform where words take you on a journey and give
+                  resilience a voice. We are more than just poetry. Our work shows the strength of
+                  the human spirit and its ability to rise above challenges.
+                </p>
+                <p>
+                  We remind you of your ability to grow from what is meant to kill you, acquire
+                  confidence to express your feelings, and find your own voice through poetry and
+                  spoken word. The work moves between the page and the stage: written to be read,
+                  then performed to be felt.
+                </p>
+                <p>
+                  Based in Nakuru, Kenya, Walking Shadow Poetry is a spoken refuge. It addresses
+                  lives, offers a pathway to healing, growth and positive change, and makes room for
+                  the stories that are too often kept quiet.
+                </p>
+              </div>
+            </Reveal>
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* Blog Posts */}
-      <section className="section">
-        <div className="container">
-          <div className="grid-2" style={{ gap: 48, alignItems: 'start' }}>
-            <div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                {aboutPosts.map((post, i) => (
-                  <article key={i}>
-                    <div
-                      style={{
-                        borderRadius: 12,
-                        overflow: 'hidden',
-                        boxShadow: 'var(--shadow-md)',
-                        background: 'var(--color-white)',
-                      }}
-                    >
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        style={{ width: '100%', height: 280, objectFit: 'cover' }}
-                        loading="lazy"
+      <section className="overflow-hidden bg-ink py-24 text-ivory sm:py-32 lg:py-40">
+        <Container>
+          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-12">
+            <Reveal className="lg:col-span-5">
+              <div className="relative aspect-[4/5] overflow-hidden bg-ivory/5">
+                <ImageWithFallback
+                  src="/media/about/about-expression.webp"
+                  alt="A creative portrait from the Walking Shadow Poetry archive"
+                  className="image-cover"
+                  width={705}
+                  height={797}
+                />
+              </div>
+              <p className="mt-5 text-[0.58rem] uppercase tracking-[0.2em] text-ivory/35">
+                The shadow is not the absence of light. It is evidence of it.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.1} className="lg:col-span-6 lg:col-start-7">
+              <p className="eyebrow mb-7 text-sand">Why “Walking Shadow”</p>
+              <blockquote className="font-display text-[clamp(2.2rem,4.5vw,4.3rem)] leading-[0.98] text-ivory">
+                “Even in the darkest moments, there is always room for growth and{' '}
+                <em className="text-sand">renewal.</em>”
+              </blockquote>
+              <div className="mt-8 space-y-5 text-sm leading-[1.9] text-ivory/60 sm:text-base">
+                <p>
+                  Our name comes from the biblical story of Peter, a disciple of Jesus. In the
+                  story, Peter&apos;s shadow carried healing power and brought change wherever it
+                  fell.
+                </p>
+                <p>
+                  This inspires us because it shows the hope and potential each of us has to make a
+                  difference. Like Peter&apos;s shadow, Walking Shadow Poetry represents the power
+                  to bring change.
+                </p>
+              </div>
+            </Reveal>
+          </div>
+        </Container>
+      </section>
+
+      <section className="bg-ivory py-24 text-ink sm:py-32 lg:py-40">
+        <Container>
+          <Reveal>
+            <SectionHeading
+              eyebrow="How we work"
+              title={
+                <>
+                  Poetry with a <em className="text-terracotta">purpose.</em>
+                </>
+              }
+              description="Three commitments shape the way Walking Shadow Poetry moves through the world."
+              align="between"
+              className="mb-16 border-b border-ink/15 pb-10 sm:mb-24"
+            />
+          </Reveal>
+
+          <div className="space-y-16 sm:space-y-24">
+            {aboutPrinciples.map((principle, index) => (
+              <Reveal key={principle.title}>
+                <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+                  <div
+                    className={`lg:col-span-5 ${index % 2 === 1 ? 'lg:order-2 lg:col-start-8' : ''}`}
+                  >
+                    <div className="relative aspect-[4/3] overflow-hidden bg-ink/5">
+                      <ImageWithFallback
+                        src={principle.image}
+                        alt={principle.imageAlt}
+                        className="image-cover"
+                        width={1600}
+                        height={1200}
                       />
-                      <div style={{ padding: 28 }}>
-                        <h3 style={{ marginBottom: 12 }}>{post.title}</h3>
-                        <p style={{ fontSize: '0.95rem', lineHeight: 1.8 }}>{post.content}</p>
-                        <a
-                          href={site.social.facebook}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-primary btn-sm"
-                          style={{ marginTop: 16 }}
-                        >
-                          Read More on Facebook
-                        </a>
-                      </div>
                     </div>
-                  </article>
-                ))}
-              </div>
-            </div>
-
-            {/* Sidebar */}
-            <aside style={{ position: 'sticky', top: 96 }}>
-              {/* Categories */}
-              <div
-                style={{
-                  background: 'var(--color-white)',
-                  borderRadius: 12,
-                  padding: 28,
-                  boxShadow: 'var(--shadow-md)',
-                  marginBottom: 24,
-                }}
-              >
-                <h3 style={{ marginBottom: 16, fontSize: '1.15rem', fontFamily: 'var(--font-body)' }}>
-                  All Categories
-                </h3>
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {categories.map((cat, i) => (
-                    <li key={i}>
-                      <a
-                        href={site.social.instagram}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          padding: '10px 12px',
-                          borderRadius: 8,
-                          color: 'var(--color-gray-600)',
-                          fontSize: '0.9rem',
-                          transition: 'background 150ms',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-gray-50)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                      >
-                        <span>{cat.name}</span>
-                        <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{cat.count}</span>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Latest Videos */}
-              <div
-                style={{
-                  background: 'var(--color-white)',
-                  borderRadius: 12,
-                  padding: 28,
-                  boxShadow: 'var(--shadow-md)',
-                  marginBottom: 24,
-                }}
-              >
-                <h3 style={{ marginBottom: 16, fontSize: '1.15rem', fontFamily: 'var(--font-body)' }}>
-                  Recent Videos on YouTube
-                </h3>
-                <ul style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {[
-                    { title: 'The Pastor\'s Kid', url: 'https://www.youtube.com/watch?v=SQKmNTXhdvk&t=2s' },
-                    { title: 'The Life Script', url: 'https://www.youtube.com/watch?v=f7FhOV2KBg4' },
-                    { title: 'God Knows Why', url: 'https://youtube.com/watch?v=NFUMeq6xGuk' },
-                    { title: 'One Word for the People', url: 'https://www.youtube.com/watch?v=kf3IqMA3xbI' },
-                  ].map((v, i) => (
-                    <li key={i}>
-                      <a
-                        href={v.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{
-                          display: 'flex',
-                          gap: 10,
-                          padding: '10px 12px',
-                          borderRadius: 8,
-                          textDecoration: 'none',
-                          transition: 'background 150ms',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-gray-50)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                      >
-                        <span style={{ color: '#ff0000', flexShrink: 0, marginTop: 2 }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0C.488 3.45.029 5.804 0 12c.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zM9 16V8l8 4-8 4z" />
-                          </svg>
-                        </span>
-                        <div>
-                          <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--color-gray-700)', marginBottom: 2 }}>
-                            {v.title}
-                          </p>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--color-gray-400)' }}>
-                            Walking Shadow Poetry
-                          </span>
-                        </div>
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Tags */}
-              <div
-                style={{
-                  background: 'var(--color-white)',
-                  borderRadius: 12,
-                  padding: 28,
-                  boxShadow: 'var(--shadow-md)',
-                  marginBottom: 24,
-                }}
-              >
-                <h3 style={{ marginBottom: 16, fontSize: '1.15rem', fontFamily: 'var(--font-body)' }}>
-                  Latest Tags
-                </h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {[
-                    'spokenword', 'poetess', 'poetry', 'poet', 'walkingshadowpoetry',
-                    'WalkingshadowpoetrybyPreciousOwoko', 'walkingshadowpoetrykenya',
-                    'spokenwordartist', 'voiceoverartist', 'precoiusowoko',
-                  ].map((tag, i) => (
-                    <a
-                      key={i}
-                      href={`https://www.instagram.com/explore/tags/${tag}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        padding: '6px 14px',
-                        borderRadius: 20,
-                        background: 'var(--color-gray-50)',
-                        color: 'var(--color-gray-600)',
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                        transition: 'all 150ms',
-                      }}
-                      onMouseEnter={e => {
-                        e.currentTarget.style.background = 'var(--color-primary)';
-                        e.currentTarget.style.color = 'var(--color-white)';
-                      }}
-                      onMouseLeave={e => {
-                        e.currentTarget.style.background = 'var(--color-gray-50)';
-                        e.currentTarget.style.color = 'var(--color-gray-600)';
-                      }}
-                    >
-                      #{tag}
-                    </a>
-                  ))}
+                  </div>
+                  <div
+                    className={`lg:col-span-6 ${
+                      index % 2 === 1 ? 'lg:order-1 lg:col-start-1' : 'lg:col-start-7'
+                    }`}
+                  >
+                    <span className="text-[0.6rem] tracking-[0.22em] text-terracotta">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="mt-3 font-display text-[clamp(2.3rem,4vw,4rem)] leading-none">
+                      {principle.title}
+                    </h3>
+                    <p className="mt-5 max-w-xl text-sm leading-[1.9] text-ink/65 sm:text-base">
+                      {principle.body}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {/* TikTok */}
-              <div
-                style={{
-                  background: 'var(--color-white)',
-                  borderRadius: 12,
-                  padding: 28,
-                  boxShadow: 'var(--shadow-md)',
-                  textAlign: 'center',
-                }}
-              >
-                <h3 style={{ marginBottom: 12, fontSize: '1.15rem', fontFamily: 'var(--font-body)' }}>
-                  Follow Us on TikTok
-                </h3>
-                <a href={site.social.tiktok} target="_blank" rel="noopener noreferrer">
-                  <img
-                    src="/images/blog/tiktok.png"
-                    alt="Walking Shadow Poetry TikTok"
-                    style={{ width: '100%', maxWidth: 200, margin: '0 auto', borderRadius: 12 }}
-                    loading="lazy"
-                  />
-                </a>
-              </div>
-            </aside>
+              </Reveal>
+            ))}
           </div>
-        </div>
+        </Container>
       </section>
-    </>
+
+      <section className="bg-brand-tint py-24 text-ink sm:py-32 lg:py-40">
+        <Container>
+          <Reveal>
+            <SectionHeading
+              eyebrow="Core values"
+              title={
+                <>
+                  What we <em className="text-brown">carry.</em>
+                </>
+              }
+              description="Lending a voice to the voiceless."
+              align="between"
+              className="mb-14 border-b border-ink/20 pb-10 sm:mb-20"
+            />
+          </Reveal>
+          <div className="grid gap-x-10 gap-y-12 sm:grid-cols-2">
+            {values.map((value, index) => (
+              <Reveal key={value.title} delay={0.05 * index}>
+                <div className="border-t border-ink/20 pt-6">
+                  <div className="flex items-baseline justify-between gap-6">
+                    <h3 className="font-display text-4xl leading-none sm:text-5xl">
+                      {value.title}
+                    </h3>
+                    <span className="text-[0.6rem] tracking-[0.22em] text-ink/35">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <p className="mt-4 max-w-lg text-sm leading-relaxed text-ink/60">
+                    {value.description}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </Container>
+      </section>
+
+      <section className="bg-ink py-24 text-ivory sm:py-32 lg:py-40">
+        <Container>
+          <Reveal>
+            <SectionHeading
+              eyebrow="Mission, vision & aim"
+              tone="dark"
+              title={
+                <>
+                  The work, <em className="text-sand">in words.</em>
+                </>
+              }
+              align="between"
+              className="mb-14 border-b border-ivory/12 pb-10 sm:mb-20"
+            />
+          </Reveal>
+
+          <div className="grid gap-12 lg:grid-cols-3 lg:gap-10">
+            {[
+              { label: 'Mission', text: mission.mission },
+              { label: 'Vision', text: mission.vision },
+              { label: 'Aim', text: mission.aim },
+            ].map((item, index) => (
+              <Reveal key={item.label} delay={0.07 * index}>
+                <div className="border-t border-ivory/20 pt-6">
+                  <p className="eyebrow text-sand">{item.label}</p>
+                  <p className="mt-6 font-display text-[clamp(1.8rem,2.8vw,2.8rem)] leading-[1.1] text-ivory">
+                    {item.text}
+                  </p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={0.16}>
+            <div className="mt-20 border-y border-ivory/12 py-14 text-center">
+              <p className="font-display text-[clamp(2.4rem,6vw,6.5rem)] leading-[0.92] text-ivory">
+                Grow from what&apos;s meant to <em className="text-sand">kill you.</em>
+              </p>
+              <p className="mt-5 text-[0.6rem] uppercase tracking-[0.26em] text-ivory/40">
+                The Walking Shadow Poetry slogan
+              </p>
+            </div>
+          </Reveal>
+        </Container>
+      </section>
+
+      <section className="bg-ivory py-24 text-ink sm:py-32 lg:py-40">
+        <Container>
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-10">
+            <Reveal className="lg:col-span-4">
+              <p className="eyebrow text-terracotta">The journey</p>
+              <h2 className="mt-6 font-display text-[clamp(2.5rem,4.5vw,4.4rem)] leading-none">
+                Selected <em className="text-terracotta">moments.</em>
+              </h2>
+              <p className="mt-6 max-w-sm text-sm leading-relaxed text-ink/55">
+                A growing record of the places, performances and milestones that have shaped the
+                work so far.
+              </p>
+            </Reveal>
+
+            <div className="lg:col-span-7 lg:col-start-6">
+              {milestones.map((milestone, index) => (
+                <Reveal key={`${milestone.title}-${index}`} delay={0.04 * index}>
+                  <div className="grid grid-cols-[3.5rem_1fr] gap-5 border-t border-ink/15 py-7 sm:grid-cols-[5rem_1fr] sm:gap-8">
+                    <span className="font-display text-2xl italic text-terracotta sm:text-3xl">
+                      {milestone.year}
+                    </span>
+                    <div>
+                      <p className="mb-1 text-[0.55rem] uppercase tracking-[0.2em] text-ink/40">
+                        {milestone.date}
+                      </p>
+                      <h3 className="font-display text-2xl leading-tight sm:text-3xl">
+                        {milestone.title}
+                      </h3>
+                      <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink/55">
+                        {milestone.description}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <section className="bg-brand-tint py-24 text-ink sm:py-32">
+        <Container>
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-12">
+            <Reveal className="lg:col-span-5">
+              <div className="aspect-[4/5] overflow-hidden bg-ink/10">
+                <ImageWithFallback
+                  src="/media/about/about-portrait.webp"
+                  alt="A portrait from the Walking Shadow Poetry archive"
+                  className="image-cover"
+                  width={640}
+                  height={640}
+                />
+              </div>
+            </Reveal>
+            <Reveal delay={0.1} className="lg:col-span-6 lg:col-start-7">
+              <p className="eyebrow text-brown/60">The voice</p>
+              <h2 className="mt-6 font-display text-[clamp(2.5rem,4.5vw,4.4rem)] leading-none">
+                Poetry by <em className="text-brown">Precious Owoko.</em>
+              </h2>
+              <div className="mt-6 space-y-5 text-sm leading-[1.9] text-ink/65 sm:text-base">
+                <p>
+                  Walking Shadow Poetry is the creative home of poet and spoken-word artist
+                  Precious Owoko. The platform&apos;s performances and published pieces carry a
+                  voice shaped by Nakuru, by lived experience, and by the belief that words can
+                  help people grow.
+                </p>
+                <p>
+                  For bookings, collaborations, press enquiries or the full published biography,
+                  please get in touch directly.
+                </p>
+              </div>
+              <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+                <Link
+                  to="/contact"
+                  className="group inline-flex items-center gap-3 border-b border-ink pb-2 text-[0.64rem] uppercase tracking-[0.2em] transition-colors hover:border-brown hover:text-brown"
+                >
+                  Contact the studio
+                  <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.5} />
+                </Link>
+                <Link
+                  to="/poetry"
+                  className="text-[0.64rem] uppercase tracking-[0.2em] text-ink/55 transition-colors hover:text-brown"
+                >
+                  Read the poetry
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+        </Container>
+      </section>
+
+      <BookingCTA />
+    </PageTransition>
   );
 }

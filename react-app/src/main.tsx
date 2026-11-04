@@ -3,15 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
-import './styles/global.css';
-
-// Fade in lazy images on load
-document.addEventListener('load', (e) => {
-  const target = e.target as HTMLElement;
-  if (target.tagName === 'IMG' && target.getAttribute('loading') === 'lazy') {
-    target.classList.add('loaded');
-  }
-}, true);
+import './styles/index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

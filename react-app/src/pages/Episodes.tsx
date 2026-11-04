@@ -1,439 +1,318 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import SEO from '../components/seo/SEO';
-import { ImageSkeleton } from '../components/ui/Skeleton';
-import { fetchPosts, formatDate, stripHtml, getCategories, type WPPost } from '../data/api';
+import { useEffect, useMemo, useState } from 'react';
+import { ArrowUpRight, Search, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import Container from '../components/common/Container';
+import ImageWithFallback from '../components/common/ImageWithFallback';
+import PageHero from '../components/common/PageHero';
+import PageTransition from '../components/common/PageTransition';
+import Reveal from '../components/common/Reveal';
+import SEO from '../components/common/SEO';
+import WordPressPostCard from '../components/episodes/WordPressPostCard';
+import WordPressPostSkeleton from '../components/episodes/WordPressPostSkeleton';
+import { useWordPressCategories, useWordPressPosts } from '../hooks/useWordPressPosts';
+import {
+  getFeaturedImage,
+  getPostCategories,
+  getPostExcerpt,
+  getPostTitle,
+} from '../services/wordpress';
+import { site } from '../data/site';
+import { cn } from '../utils/format';
 
-const PER_PAGE = 10;
+const breadcrumbs = [{ label: 'Home', path: '/' }, { label: 'Episodes' }];
+
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    ...(item.path ? { item: `${site.url}${item.path}` } : {}),
+  })),
+};
 
 export default function Episodes() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const currentPage = Math.max(1, Number(searchParams.get('page')) || 1);
-  const searchQuery = searchParams.get('search') || '';
-
-  const [posts, setPosts] = useState<WPPost[]>([]);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [searchInput, setSearchInput] = useState(searchQuery);
-  const searchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const [categoryId, setCategoryId] = useState<number>();
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { categories, error: categoriesError } = useWordPressCategories();
+  const {
+    posts,
+    total,
+    loading,
+    loadingMore,
+    error,
+    hasMore,
+    loadMore,
+    retry,
+  } = useWordPressPosts(debouncedSearch, categoryId);
 
   useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError('');
-    fetchPosts(currentPage, PER_PAGE, searchQuery)
-      .then(({ posts: data, total: t, totalPages: pages }) => {
-        if (!cancelled) {
-          setPosts(data);
-          setTotal(t);
-          setTotalPages(pages);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setError('Failed to load episodes.');
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [currentPage, searchQuery]);
+    const timer = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  const updateParams = useCallback((page: number, search: string) => {
-    const params: Record<string, string> = {};
-    if (page > 1) params.page = String(page);
-    if (search) params.search = search;
-    setSearchParams(params);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [setSearchParams]);
-
-  const goToPage = useCallback((page: number) => {
-    updateParams(page, searchQuery);
-  }, [updateParams, searchQuery]);
-
-  const handleSearchInput = (value: string) => {
-    setSearchInput(value);
-    clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      updateParams(1, value.trim());
-    }, 350);
-  };
+  const showFeatured = categoryId === undefined && debouncedSearch === '';
+  const featured = showFeatured ? posts[0] : undefined;
+  const listed = useMemo(
+    () => (featured ? posts.slice(1) : posts),
+    [featured, posts],
+  );
+  const featuredImage = featured ? getFeaturedImage(featured, 'large') : null;
+  const featuredCategory = featured ? getPostCategories(featured)[0]?.name : undefined;
 
   return (
-    <>
+    <PageTransition>
       <SEO
-        title={
-          searchQuery
-            ? `Search: "${searchQuery}"${currentPage > 1 ? ` - Page ${currentPage}` : ''}`
-            : currentPage > 1 ? `Episodes - Page ${currentPage}` : 'Episodes'
-        }
-        description={searchQuery ? `Search results for "${searchQuery}" on Walking Shadow Poetry.` : 'Browse poetry and spoken word episodes from Walking Shadow Poetry.'}
-        canonical={`https://walkingshadowpoetry.com/episodes${currentPage > 1 ? `?page=${currentPage}` : ''}`}
+        title="Stories, Words & Expressions"
+        description="Explore stories, reflections and creative expressions from Walking Shadow Poetry."
+        path="/episodes"
+        image="/media/journal/journal-hero.webp"
+        jsonLd={breadcrumbLd}
       />
 
-      <section
-        style={{
-          background: 'linear-gradient(135deg, var(--color-gray-900), #1a1a2e)',
-          padding: '80px 0 64px',
-          position: 'relative',
-          overflow: 'hidden',
-          textAlign: 'center',
-        }}
-      >
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'var(--color-white)', marginBottom: 8 }}>Episodes</h1>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: '0.95rem', marginBottom: 28 }}>
-            <Link to="/" style={{ color: 'var(--color-gray-300)' }}>Home</Link>
-            <span style={{ color: 'var(--color-gray-500)' }}>-</span>
-            <span style={{ color: 'var(--color-primary)' }}>Episodes</span>
-          </div>
+      <PageHero
+        eyebrow="The Walking Shadow journal"
+        title={
+          <>
+            Stories, Words <em className="text-sand">& Expressions</em>
+          </>
+        }
+        intro="Explore stories, reflections and creative expressions from Walking Shadow Poetry."
+        image="/media/journal/journal-hero.webp"
+        imageAlt="Walking Shadow Poetry journal"
+        breadcrumbs={breadcrumbs}
+      />
 
-          {/* Search */}
-          <div style={{ maxWidth: 480, margin: '0 auto' }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: 'var(--color-white)',
-                borderRadius: 10,
-                padding: '0 16px',
-                boxShadow: 'var(--shadow-md)',
-              }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-400)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <input
-                type="text"
-                placeholder="Search episodes..."
-                value={searchInput}
-                onChange={e => handleSearchInput(e.target.value)}
-                aria-label="Search episodes"
-                style={{
-                  width: '100%',
-                  padding: '14px 12px',
-                  border: 'none',
-                  background: 'transparent',
-                  fontSize: '0.95rem',
-                  fontFamily: 'var(--font-body)',
-                  color: 'var(--color-text)',
-                  outline: 'none',
-                }}
-              />
-              {searchInput && (
-                <button
-                  onClick={() => { setSearchInput(''); updateParams(1, ''); }}
-                  aria-label="Clear search"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--color-gray-400)', fontSize: '1.2rem', lineHeight: 1 }}
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          {loading ? (
-            <div className="episodes-list">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="episode-card">
-                  <ImageSkeleton aspectRatio="4/3" />
-                  <div style={{ padding: '24px' }}>
-                    <div style={{ height: 14, width: '30%', borderRadius: 6, background: 'var(--color-gray-100)', marginBottom: 16 }} />
-                    <div style={{ height: 24, width: '70%', borderRadius: 6, background: 'var(--color-gray-100)', marginBottom: 12 }} />
-                    <div style={{ height: 14, borderRadius: 6, background: 'var(--color-gray-100)', marginBottom: 8 }} />
-                    <div style={{ height: 14, borderRadius: 6, background: 'var(--color-gray-100)', marginBottom: 8 }} />
-                    <div style={{ height: 14, width: '60%', borderRadius: 6, background: 'var(--color-gray-100)' }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <p style={{ textAlign: 'center', color: 'var(--color-text-light)', padding: 48 }}>{error}</p>
-          ) : posts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 48 }}>
-              <p style={{ color: 'var(--color-text-light)', marginBottom: 16 }}>
-                {searchQuery ? `No episodes match "${searchQuery}".` : 'No episodes found.'}
+      <section className="bg-ivory py-20 text-ink sm:py-28">
+        <Container>
+          {error && posts.length === 0 ? (
+            <div className="border-y border-ink/15 py-20 text-center" role="alert">
+              <p className="font-display text-3xl sm:text-4xl">Stories could not be loaded.</p>
+              <p className="mx-auto mt-3 max-w-lg text-sm text-ink/55">
+                The Walking Shadow archive is temporarily unavailable. Please try again.
               </p>
-              {searchQuery && (
-                <button className="btn btn-outline btn-sm" onClick={() => { setSearchInput(''); updateParams(1, ''); }}>
-                  Clear search
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={retry}
+                className="mt-7 border border-ink px-6 py-3 text-[0.62rem] uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-ivory"
+              >
+                Retry
+              </button>
             </div>
           ) : (
             <>
-              {/* Result count */}
-              <p style={{ fontSize: '0.9rem', color: 'var(--color-text-light)', marginBottom: 20 }}>
-                {searchQuery
-                  ? `Found ${total} episode${total !== 1 ? 's' : ''} matching "${searchQuery}"`
-                  : `Showing ${posts.length} of ${total} episode${total !== 1 ? 's' : ''}`
-                }
-              </p>
-
-              <div className="episodes-list">
-                {posts.map(post => {
-                  const img = post.jetpack_featured_media_url || post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
-                  const categories = getCategories(post);
-                  return (
-                    <article key={post.id} className="episode-card">
-                      <Link to={`/episodes/${post.slug}`} className="episode-image-link">
-                        {img ? (
-                          <img
-                            src={img}
-                            alt={post.title.rendered}
-                            className="episode-image"
-                            loading="lazy"
+              {featured && (
+                <Reveal>
+                  <article className="mb-16 grid gap-8 border-b border-ink/15 pb-16 sm:mb-24 lg:grid-cols-12 lg:items-center lg:gap-12 lg:pb-24">
+                    <Link
+                      to={`/episodes/${featured.slug}`}
+                      className="group lg:col-span-7"
+                      aria-label={`Read ${getPostTitle(featured)}`}
+                    >
+                      <div className="aspect-[4/3] overflow-hidden bg-ink/5">
+                        {featuredImage ? (
+                          <ImageWithFallback
+                            src={featuredImage.url}
+                            alt={featuredImage.alt}
+                            className="image-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.03]"
+                            width={featuredImage.width ?? 1400}
+                            height={featuredImage.height ?? 1050}
+                            loading="eager"
                           />
                         ) : (
-                          <div className="episode-image-fallback">WSP</div>
-                        )}
-                      </Link>
-                      <div className="episode-body">
-                        {/* Categories */}
-                        {categories.length > 0 && (
-                          <div className="episode-categories">
-                            {categories.slice(0, 3).map(cat => (
-                              <span key={cat} className="episode-category">{cat}</span>
-                            ))}
+                          <div className="flex h-full items-end bg-brown p-8 text-ivory/70">
+                            <span className="font-display text-4xl italic">Walking Shadow</span>
                           </div>
                         )}
-                        <h3 className="episode-title">
-                          <Link to={`/episodes/${post.slug}`}>{post.title.rendered}</Link>
-                        </h3>
-                        <p className="episode-date">{formatDate(post.date)}</p>
-                        <p className="episode-excerpt">
-                          {stripHtml(post.excerpt.rendered).substring(0, 250)}...
-                        </p>
-                        <Link to={`/episodes/${post.slug}`} className="btn btn-primary btn-sm">
-                          Read More
-                        </Link>
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <nav aria-label="Episodes pagination" className="pagination-nav">
-                  <button
-                    disabled={currentPage <= 1}
-                    onClick={() => goToPage(currentPage - 1)}
-                    aria-label="Previous page"
-                    className="pagination-btn"
-                  >
-                    &larr; Prev
-                  </button>
-
-                  {generatePageNumbers(currentPage, totalPages).map((p, i) =>
-                    p === '...' ? (
-                      <span key={`dots-${i}`} className="pagination-dots">...</span>
-                    ) : (
-                      <button
-                        key={p}
-                        onClick={() => goToPage(p as number)}
-                        aria-current={currentPage === p ? 'page' : undefined}
-                        className={`pagination-btn${currentPage === p ? ' pagination-active' : ''}`}
+                    </Link>
+                    <div className="lg:col-span-4 lg:col-start-9">
+                      <p className="text-[0.58rem] uppercase tracking-[0.2em] text-terracotta">
+                        Latest story
+                      </p>
+                      <h2 className="mt-4 font-display text-[clamp(2.3rem,4vw,4rem)] leading-[0.98]">
+                        <Link
+                          to={`/episodes/${featured.slug}`}
+                          className="transition-colors hover:text-terracotta"
+                        >
+                          {getPostTitle(featured)}
+                        </Link>
+                      </h2>
+                      <p className="mt-5 line-clamp-5 whitespace-pre-line text-sm leading-relaxed text-ink/60">
+                        {getPostExcerpt(featured)}
+                      </p>
+                      <p className="mt-5 text-[0.55rem] uppercase tracking-[0.18em] text-ink/40">
+                        {[featuredCategory, formatDate(featured.date)].filter(Boolean).join(' · ')}
+                      </p>
+                      <Link
+                        to={`/episodes/${featured.slug}`}
+                        className="mt-8 inline-flex items-center gap-3 border-b border-ink pb-2 text-[0.62rem] uppercase tracking-[0.2em] transition-colors hover:border-terracotta hover:text-terracotta"
                       >
-                        {p}
-                      </button>
-                    )
-                  )}
+                        Read the story
+                        <ArrowUpRight className="size-3.5" strokeWidth={1.5} />
+                      </Link>
+                    </div>
+                  </article>
+                </Reveal>
+              )}
 
+              <Reveal>
+                <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                  <div>
+                    <p className="eyebrow text-terracotta">The archive</p>
+                    <h2 className="mt-3 font-display text-4xl leading-none sm:text-5xl">
+                      Latest stories
+                    </h2>
+                  </div>
+                  <p className="max-w-sm text-xs leading-relaxed text-ink/50">
+                    Writing and creative expression from the Walking Shadow Poetry community.
+                  </p>
+                </div>
+              </Reveal>
+
+              <Reveal>
+                <div className="border-y border-ink/15 py-6">
+                  <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+                    <div
+                      className="no-scrollbar flex gap-2 overflow-x-auto pb-1"
+                      role="group"
+                      aria-label="Filter stories by category"
+                    >
+                      {[{ id: undefined, name: 'All' }, ...categories].map((item) => {
+                        const active = categoryId === item.id;
+                        return (
+                          <button
+                            key={item.id ?? 'all'}
+                            type="button"
+                            onClick={() => setCategoryId(item.id)}
+                            aria-pressed={active}
+                            className={cn(
+                              'shrink-0 border px-4 py-2.5 text-[0.58rem] uppercase tracking-[0.18em] transition-colors',
+                              active
+                                ? 'border-ink bg-ink text-ivory'
+                                : 'border-ink/15 text-ink/60 hover:border-ink/40 hover:text-ink',
+                            )}
+                          >
+                            {item.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <label className="relative flex w-full items-center sm:w-64">
+                        <span className="sr-only">Search stories</span>
+                        <Search className="pointer-events-none absolute left-0 size-4 text-ink/35" strokeWidth={1.5} />
+                        <input
+                          type="search"
+                          value={search}
+                          onChange={(event) => setSearch(event.target.value)}
+                          placeholder="Search stories"
+                          className="w-full border-b border-ink/25 bg-transparent py-2 pl-7 pr-7 text-sm text-ink placeholder:text-ink/35 focus:border-terracotta focus:outline-none"
+                        />
+                        {search && (
+                          <button
+                            type="button"
+                            onClick={() => setSearch('')}
+                            className="absolute right-0 text-ink/40 transition-colors hover:text-ink"
+                            aria-label="Clear search"
+                          >
+                            <X className="size-4" strokeWidth={1.5} />
+                          </button>
+                        )}
+                      </label>
+                      <span className="shrink-0 text-[0.55rem] uppercase tracking-[0.18em] text-ink/40">
+                        {loading ? 'Loading' : `${total} ${total === 1 ? 'story' : 'stories'}`}
+                      </span>
+                    </div>
+                  </div>
+                  {categoriesError && (
+                    <p className="mt-4 text-xs text-ink/45">
+                      Categories are temporarily unavailable; you can still browse and search all stories.
+                    </p>
+                  )}
+                </div>
+              </Reveal>
+
+              {loading ? (
+                <div
+                  className="mt-12 grid gap-12 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-16 lg:grid-cols-3"
+                  aria-label="Loading stories"
+                  aria-busy="true"
+                >
+                  {Array.from({ length: 6 }, (_, index) => <WordPressPostSkeleton key={index} />)}
+                </div>
+              ) : listed.length > 0 ? (
+                <div className="mt-12 grid gap-12 sm:grid-cols-2 sm:gap-x-8 sm:gap-y-16 lg:grid-cols-3">
+                  {listed.map((post, index) => (
+                    <Reveal key={post.id} delay={Math.min(index * 0.05, 0.2)}>
+                      <WordPressPostCard post={post} />
+                    </Reveal>
+                  ))}
+                </div>
+              ) : !featured ? (
+                <div className="py-20 text-center">
+                  <p className="font-display text-4xl">
+                    {search || categoryId !== undefined ? 'No stories found.' : 'The archive is waiting.'}
+                  </p>
+                  <p className="mt-3 text-sm text-ink/55">
+                    {search || categoryId !== undefined
+                      ? 'Try another search or category.'
+                      : 'Published stories will appear here.'}
+                  </p>
+                  {(search || categoryId !== undefined) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCategoryId(undefined);
+                        setSearch('');
+                      }}
+                      className="mt-7 border border-ink px-6 py-3 text-[0.62rem] uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-ivory"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              ) : null}
+
+              {error && posts.length > 0 && (
+                <div className="mt-10 border-y border-ink/15 py-5 text-center" role="alert">
+                  <p className="text-sm text-ink/65">More stories could not be loaded.</p>
                   <button
-                    disabled={currentPage >= totalPages}
-                    onClick={() => goToPage(currentPage + 1)}
-                    aria-label="Next page"
-                    className="pagination-btn"
+                    type="button"
+                    onClick={retry}
+                    className="mt-3 text-[0.6rem] uppercase tracking-[0.18em] text-terracotta"
                   >
-                    Next &rarr;
+                    Retry
                   </button>
-                </nav>
+                </div>
+              )}
+
+              {hasMore && !loading && !error && (
+                <div className="mt-16 text-center">
+                  <button
+                    type="button"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="border border-ink px-7 py-4 text-[0.62rem] uppercase tracking-[0.2em] transition-colors hover:bg-ink hover:text-ivory disabled:cursor-wait disabled:opacity-50"
+                  >
+                    {loadingMore ? 'Loading stories…' : 'Load more stories'}
+                  </button>
+                </div>
               )}
             </>
           )}
-        </div>
+        </Container>
       </section>
-
-      <style>{`
-        /* Card grid */
-        .episodes-list {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-        }
-
-        .episode-card {
-          display: flex;
-          flex-direction: column;
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: var(--shadow-md);
-          background: var(--color-white);
-          transition: box-shadow 200ms, transform 200ms;
-        }
-        .episode-card:hover {
-          box-shadow: var(--shadow-lg);
-          transform: translateY(-4px);
-        }
-
-        .episode-image-link {
-          display: block;
-          overflow: hidden;
-          aspect-ratio: 16 / 11;
-        }
-        .episode-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 300ms;
-        }
-        .episode-card:hover .episode-image { transform: scale(1.05); }
-        .episode-image-fallback {
-          width: 100%;
-          height: 100%;
-          background: var(--color-primary-bg);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--color-primary);
-          font-weight: 600;
-        }
-
-        .episode-body {
-          padding: 20px;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-
-        .episode-categories {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 10px;
-        }
-        .episode-category {
-          padding: 4px 12px;
-          border-radius: 20px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          background: var(--color-primary-bg);
-          color: var(--color-primary-dark);
-        }
-
-        .episode-title {
-          margin-bottom: 8px;
-          font-size: 1.1rem;
-        }
-        .episode-title a {
-          color: inherit;
-          text-decoration: none;
-        }
-        .episode-title a:hover { color: var(--color-primary); }
-
-        .episode-date {
-          font-size: 0.8rem;
-          color: var(--color-gray-400);
-          margin-bottom: 10px;
-        }
-        .episode-excerpt {
-          font-size: 0.9rem;
-          line-height: 1.7;
-          color: var(--color-text);
-          flex: 1;
-        }
-
-        .pagination-nav {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          gap: 8px;
-          margin-top: 48px;
-          flex-wrap: wrap;
-        }
-        .pagination-btn {
-          padding: 10px 18px;
-          border-radius: 8px;
-          border: none;
-          cursor: pointer;
-          font-size: 0.9rem;
-          transition: all 150ms;
-          min-width: 44px;
-          min-height: 44px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--color-gray-50);
-          color: var(--color-gray-600);
-        }
-        .pagination-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-        .pagination-btn:not(:disabled):hover {
-          background: var(--color-gray-100);
-        }
-        .pagination-active {
-          background: var(--color-primary) !important;
-          color: var(--color-white) !important;
-          font-weight: 700;
-        }
-        .pagination-dots {
-          color: var(--color-gray-400);
-          padding: 0 4px;
-        }
-
-        /* Tablet: 2 columns */
-        @media (max-width: 1024px) {
-          .episodes-list {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-
-        /* Mobile: 1 column */
-        @media (max-width: 640px) {
-          .episodes-list {
-            grid-template-columns: 1fr;
-          }
-          .episode-body { padding: 16px; }
-          .pagination-nav { gap: 4px; }
-          .pagination-btn {
-            padding: 8px 12px;
-            min-width: 38px;
-            min-height: 38px;
-            font-size: 0.85rem;
-          }
-        }
-      `}</style>
-    </>
+    </PageTransition>
   );
 }
 
-function generatePageNumbers(current: number, total: number): (number | '...')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-
-  const pages: (number | '...')[] = [];
-  pages.push(1);
-
-  if (current > 3) pages.push('...');
-
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  for (let i = start; i <= end; i++) pages.push(i);
-
-  if (current < total - 2) pages.push('...');
-
-  pages.push(total);
-
-  return pages;
+function formatDate(date: string) {
+  return new Intl.DateTimeFormat('en-KE', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(date));
 }

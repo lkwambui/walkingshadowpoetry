@@ -1,281 +1,145 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Close } from '../components/ui/Icons';
-import SEO from '../components/seo/SEO';
-import { galleryItems, type GalleryItem } from '../data/content';
+import { useMemo, useState } from 'react';
+import { ArrowUpRight } from 'lucide-react';
+import Container from '../components/common/Container';
+import PageHero from '../components/common/PageHero';
+import PageTransition from '../components/common/PageTransition';
+import Reveal from '../components/common/Reveal';
+import SEO from '../components/common/SEO';
+import Lightbox from '../components/gallery/Lightbox';
+import MasonryGallery from '../components/gallery/MasonryGallery';
+import { galleryCategories, galleryItems } from '../data/gallery';
+import { site } from '../data/site';
+import { cn } from '../utils/format';
 
-const categories = [
-  { key: 'all', label: 'The Galore' },
-  { key: 'awards', label: 'Awards' },
-  { key: 'campaigns', label: 'Campaigns' },
-  { key: 'collections', label: 'Collections' },
-  { key: 'artist', label: 'Artist' },
-] as const;
+const breadcrumbs = [{ label: 'Home', path: '/' }, { label: 'Gallery' }];
 
-type CatKey = (typeof categories)[number]['key'];
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: breadcrumbs.map((item, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: item.label,
+    ...(item.path ? { item: `${site.url}${item.path}` } : {}),
+  })),
+};
 
 export default function Gallery() {
-  const [active, setActive] = useState<CatKey>('all');
-  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
+  const [category, setCategory] = useState<(typeof galleryCategories)[number]>('All');
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
-  const filtered = active === 'all' ? galleryItems : galleryItems.filter(g => g.category === active);
-
-  const closeLightbox = useCallback(() => setLightbox(null), []);
-
-  useEffect(() => {
-    if (!lightbox) return;
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') closeLightbox();
-    };
-
-    document.addEventListener('keydown', onKeyDown);
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [lightbox, closeLightbox]);
-
-  useEffect(() => {
-    if (lightbox) {
-      const el = document.querySelector('[data-lightbox-close]') as HTMLElement | null;
-      el?.focus();
-    }
-  }, [lightbox]);
+  const filtered = useMemo(
+    () =>
+      category === 'All'
+        ? galleryItems
+        : galleryItems.filter((item) => item.category === category),
+    [category],
+  );
 
   return (
-    <>
+    <PageTransition>
       <SEO
-        title="Gallery"
-        description="Explore the gallery of Walking Shadow Poetry - awards, campaigns, collections, and artist photos. Art from the Heart."
-        canonical="https://walkingshadowpoetry.com/gallery"
+        title="Gallery — Moments from the archive"
+        description="A visual archive of Walking Shadow Poetry: performances, portraits, campaigns and moments from the Tukuza and FEMA Awards."
+        path="/gallery"
+        image="/media/gallery/gallery-hero.webp"
+        jsonLd={breadcrumbLd}
       />
 
-      <section
-        style={{
-          background: 'linear-gradient(135deg, var(--color-gray-900), #1a1a2e)',
-          padding: '80px 0 64px',
-          position: 'relative',
-          overflow: 'hidden',
-          textAlign: 'center',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: '-30%',
-            right: '-10%',
-            width: '50%',
-            height: '50%',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, var(--color-primary) 0%, transparent 70%)',
-            opacity: 0.1,
-          }}
-        />
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <h1 style={{ color: 'var(--color-white)', marginBottom: 8 }}>Gallery</h1>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, fontSize: '0.95rem' }}>
-            <Link to="/" style={{ color: 'var(--color-gray-300)' }}>Home</Link>
-            <span style={{ color: 'var(--color-gray-500)' }}>-</span>
-            <span style={{ color: 'var(--color-primary)' }}>Gallery</span>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="The visual archive"
+        title={
+          <>
+            Moments that <em className="text-sand">stay.</em>
+          </>
+        }
+        intro="Portraits, performances and the rooms in between. A growing visual record of Walking Shadow Poetry."
+        image="/media/gallery/gallery-hero.webp"
+        imageAlt="A Walking Shadow Poetry portrait from the archive"
+        breadcrumbs={breadcrumbs}
+      />
 
-      <section className="section">
-        <div className="container">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 8,
-              flexWrap: 'wrap',
-              marginBottom: 40,
-            }}
-          >
-            {categories.map(cat => (
-              <button
-                key={cat.key}
-                onClick={() => setActive(cat.key)}
-                aria-pressed={active === cat.key}
-                style={{
-                  padding: '10px 24px',
-                  borderRadius: 8,
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  transition: 'all 150ms',
-                  background: active === cat.key ? 'var(--color-primary)' : 'var(--color-gray-50)',
-                  color: active === cat.key ? 'var(--color-white)' : 'var(--color-gray-600)',
-                  minHeight: 44,
-                }}
-                onMouseEnter={e => {
-                  if (active !== cat.key) {
-                    e.currentTarget.style.background = 'var(--color-gray-100)';
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (active !== cat.key) {
-                    e.currentTarget.style.background = 'var(--color-gray-50)';
-                  }
-                }}
+      <section className="bg-ivory py-20 text-ink sm:py-28">
+        <Container>
+          <Reveal>
+            <div className="mb-10 flex flex-col gap-6 border-b border-ink/15 pb-8 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="eyebrow text-terracotta">Browse the archive</p>
+                <h2 className="mt-3 font-display text-4xl leading-none sm:text-5xl">
+                  The gallery
+                </h2>
+              </div>
+              <p className="max-w-sm text-xs leading-relaxed text-ink/50">
+                Select any image to open it in full. Use the arrow keys to move through the archive.
+              </p>
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter gallery by category">
+                {galleryCategories.map((item) => {
+                  const active = category === item;
+                  return (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => {
+                        setCategory(item);
+                        setActiveIndex(null);
+                      }}
+                      aria-pressed={active}
+                      className={cn(
+                        'border px-4 py-2.5 text-[0.58rem] uppercase tracking-[0.18em] transition-colors',
+                        active
+                          ? 'border-ink bg-ink text-ivory'
+                          : 'border-ink/15 text-ink/60 hover:border-ink/40 hover:text-ink',
+                      )}
+                    >
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="text-[0.55rem] uppercase tracking-[0.18em] text-ink/40">
+                {filtered.length} {filtered.length === 1 ? 'image' : 'images'}
+              </span>
+            </div>
+          </Reveal>
+
+          <Reveal>
+            <MasonryGallery items={filtered} onSelect={setActiveIndex} />
+          </Reveal>
+
+          <Reveal>
+            <div className="mt-16 flex flex-col items-start justify-between gap-6 border-t border-ink/15 pt-10 sm:flex-row sm:items-center">
+              <div>
+                <p className="eyebrow text-terracotta">Follow the work</p>
+                <p className="mt-3 max-w-md font-display text-2xl leading-tight sm:text-3xl">
+                  New images and moments are shared on Instagram.
+                </p>
+              </div>
+              <a
+                href={site.social.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-ink px-7 py-4 text-[0.62rem] uppercase tracking-[0.2em] text-ivory transition-colors hover:bg-brand hover:text-ink"
               >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {filtered.length === 0 ? (
-            <p style={{ textAlign: 'center', color: 'var(--color-text-light)', padding: 48 }}>
-              No images found in this category.
-            </p>
-          ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: 16,
-              }}
-            >
-              {filtered.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => setLightbox(item)}
-                  aria-label={`View ${item.title || 'image'}`}
-                  style={{
-                    position: 'relative',
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    aspectRatio: item.category === 'artist' ? '3/4' : '4/3',
-                    background: 'var(--color-gray-100)',
-                    minHeight: 200,
-                  }}
-                >
-                  <img
-                    src={item.src}
-                    alt={item.title || 'Gallery image'}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      transition: 'transform 300ms',
-                    }}
-                    loading="lazy"
-                  />
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)',
-                      opacity: 0,
-                      transition: 'opacity 200ms',
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      padding: 16,
-                    }}
-                    className="gallery-overlay-item"
-                  >
-                    <div style={{ textAlign: 'left', width: '100%' }}>
-                      {item.title && (
-                        <h4 style={{ color: 'var(--color-white)', margin: 0, fontSize: '1rem' }}>{item.title}</h4>
-                      )}
-                      {item.caption && (
-                        <p style={{ color: 'var(--color-gray-200)', fontSize: '0.8rem', margin: '2px 0 0' }}>
-                          {item.caption}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              ))}
+                Visit Instagram
+                <ArrowUpRight className="size-3.5" strokeWidth={1.5} />
+              </a>
             </div>
-          )}
-        </div>
+          </Reveal>
+        </Container>
       </section>
 
-      {lightbox && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Image lightbox"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 9999,
-            background: 'rgba(0,0,0,0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 24,
-            cursor: 'pointer',
-          }}
-          onClick={closeLightbox}
-        >
-          <button
-            data-lightbox-close
-            onClick={closeLightbox}
-            aria-label="Close lightbox"
-            style={{
-              position: 'absolute',
-              top: 20,
-              right: 24,
-              background: 'rgba(0,0,0,0.5)',
-              border: 'none',
-              color: 'var(--color-white)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: 8,
-              lineHeight: 1,
-            }}
-          >
-            <Close size={20} color="var(--color-white)" />
-          </button>
-          <img
-            src={lightbox.src}
-            alt={lightbox.title || 'Gallery image'}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '85vh',
-              objectFit: 'contain',
-              borderRadius: 8,
-            }}
-            onClick={e => e.stopPropagation()}
-          />
-          {(lightbox.title || lightbox.caption) && (
-            <div
-              style={{
-                position: 'absolute',
-                bottom: 24,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                background: 'rgba(0,0,0,0.7)',
-                color: 'var(--color-white)',
-                padding: '12px 24px',
-                borderRadius: 8,
-                textAlign: 'center',
-                maxWidth: '80vw',
-              }}
-            >
-              {lightbox.title && <h4 style={{ color: 'var(--color-white)', margin: 0 }}>{lightbox.title}</h4>}
-              {lightbox.caption && <p style={{ color: 'var(--color-gray-200)', margin: 0, fontSize: '0.9rem' }}>{lightbox.caption}</p>}
-            </div>
-          )}
-        </div>
+      {activeIndex !== null && (
+        <Lightbox
+          items={filtered}
+          index={activeIndex}
+          onClose={() => setActiveIndex(null)}
+          onChange={setActiveIndex}
+        />
       )}
-
-      <style>{`
-        .gallery-overlay-item { opacity: 0; }
-        button:hover .gallery-overlay-item { opacity: 1; }
-        button:hover img { transform: scale(1.05); }
-        button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
-      `}</style>
-    </>
+    </PageTransition>
   );
 }
