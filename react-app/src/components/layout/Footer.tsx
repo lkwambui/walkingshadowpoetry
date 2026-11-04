@@ -158,7 +158,20 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 flex flex-col gap-5 border-t border-ivory/10 pt-6 text-[0.6rem] uppercase tracking-[0.18em] text-ivory/35 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {year} Walking Shadow Poetry. All rights reserved.</p>
+          <div className="flex flex-col gap-2">
+            <p>© {year} Walking Shadow Poetry. All rights reserved.</p>
+            <p>
+              Built and developed by{' '}
+              <a
+                href="https://lucykamau.logicorex.co.ke/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-colors hover:text-ivory"
+              >
+                Lucy Kamau
+              </a>
+            </p>
+          </div>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span>Photography and words from the Walking Shadow archive</span>
             <a
