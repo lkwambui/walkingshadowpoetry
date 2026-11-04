@@ -160,13 +160,13 @@ export default function Footer() {
         <div className="mt-16 flex flex-col gap-5 border-t border-ivory/10 pt-6 text-[0.6rem] uppercase tracking-[0.18em] text-ivory/35 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-2">
             <p>© {year} Walking Shadow Poetry. All rights reserved.</p>
-            <p>
-              Built and developed by{' '}
+            <p className="text-xs normal-case tracking-normal text-ivory/70 sm:text-sm">
+              Website built &amp; developed by{' '}
               <a
                 href="https://lucykamau.logicorex.co.ke/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="transition-colors hover:text-ivory"
+                className="font-semibold text-brand-light underline decoration-brand-light/50 underline-offset-4 transition-colors hover:text-ivory hover:decoration-ivory"
               >
                 Lucy Kamau
               </a>
