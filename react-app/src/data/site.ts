@@ -16,7 +16,7 @@ export const site = {
   founder: 'Precious Owoko',
   url: 'https://walkingshadowpoetry.com',
   social: {
-    facebook: 'https://www.facebook.com/kenyanpoetess',
+    facebook: 'https://web.facebook.com/preciousowoko.official',
     instagram: 'https://www.instagram.com/walkingshadowpoetrykenya',
     youtube: 'https://youtube.com/@WalkingShadowPoetryKenya',
     tiktok: 'https://www.tiktok.com/@walkingshadowpoetry',
@@ -38,7 +38,7 @@ export const navLinks = [
 export const socialLinks = [
   { label: 'Instagram', href: site.social.instagram, handle: '@walkingshadowpoetrykenya' },
   { label: 'YouTube', href: site.social.youtube, handle: '@WalkingShadowPoetryKenya' },
-  { label: 'Facebook', href: site.social.facebook, handle: 'kenyanpoetess' },
+  { label: 'Facebook', href: site.social.facebook, handle: 'preciousowoko.official' },
   { label: 'TikTok', href: site.social.tiktok, handle: '@walkingshadowpoetry' },
   { label: 'WhatsApp', href: site.social.whatsapp, handle: '+254 748 458 629' },
 ] as const;
