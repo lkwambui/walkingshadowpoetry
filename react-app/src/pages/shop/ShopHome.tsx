@@ -51,8 +51,6 @@ export default function ShopHome() {
         ]}
       />
 
-      <ShopSubnav />
-
       {/* A. Shop hero */}
       <section className="relative isolate flex min-h-[86vh] items-end overflow-hidden bg-ink text-ivory">
         <ImageWithFallback
@@ -62,7 +60,7 @@ export default function ShopHome() {
           loading="eager"
           fetchPriority="high"
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/30" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/50 to-ink/65" />
 
         <div className="shell w-full pb-16 pt-32 sm:pb-20 lg:pb-24">
           <motion.p
@@ -107,6 +105,8 @@ export default function ShopHome() {
           </motion.div>
         </div>
       </section>
+
+      <ShopSubnav />
 
       {/* B. Featured categories */}
       <section className="bg-ivory py-20 text-ink sm:py-28">

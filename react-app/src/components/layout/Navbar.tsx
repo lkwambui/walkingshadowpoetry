@@ -26,7 +26,11 @@ export default function Navbar() {
     setMenuOpen(false);
   }, [location.pathname]);
 
-  const solid = scrolled || menuOpen;
+  const path = location.pathname;
+  const isShop = path === '/shop' || path.startsWith('/shop/');
+  const shopHasDarkHero =
+    path === '/shop' || path === '/shop/personalized' || path === '/shop/commissions';
+  const solid = scrolled || menuOpen || (isShop && !shopHasDarkHero);
   const tone = solid ? 'ink' : 'ivory';
 
   return (

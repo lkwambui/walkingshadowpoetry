@@ -28,7 +28,6 @@ define( 'WSC_REST_NAMESPACE', 'walkingshadow/v1' );
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-settings.php';
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-personalization.php';
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-mpesa.php';
-require_once WSC_PLUGIN_DIR . 'includes/class-wsc-gateway.php';
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-commissions.php';
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-newsletter.php';
 require_once WSC_PLUGIN_DIR . 'includes/class-wsc-rest.php';
@@ -42,6 +41,12 @@ function wsc_bootstrap() {
 		return;
 	}
 
+	// The gateway extends WC_Payment_Gateway, so only load it once WooCommerce
+	// has registered its base classes. Loading it earlier is an immediate fatal.
+	if ( class_exists( 'WC_Payment_Gateway' ) ) {
+		require_once WSC_PLUGIN_DIR . 'includes/class-wsc-gateway.php';
+	}
+
 	WSC_Settings::instance();
 	WSC_Personalization::instance();
 	WSC_Mpesa::instance();
@@ -49,13 +54,15 @@ function wsc_bootstrap() {
 	WSC_Newsletter::instance();
 	WSC_Rest::instance();
 
-	add_filter(
-		'woocommerce_payment_gateways',
-		static function ( $gateways ) {
-			$gateways[] = 'WSC_Gateway';
-			return $gateways;
-		}
-	);
+	if ( class_exists( 'WSC_Gateway' ) ) {
+		add_filter(
+			'woocommerce_payment_gateways',
+			static function ( $gateways ) {
+				$gateways[] = 'WSC_Gateway';
+				return $gateways;
+			}
+		);
+	}
 }
 add_action( 'plugins_loaded', 'wsc_bootstrap', 11 );
 

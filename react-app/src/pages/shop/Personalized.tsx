@@ -52,8 +52,6 @@ export default function Personalized() {
         }}
       />
 
-      <ShopSubnav />
-
       <section className="relative isolate flex min-h-[62vh] items-end overflow-hidden bg-ink text-ivory">
         <ImageWithFallback
           src="/media/poetry/my-love-poem.webp"
@@ -61,7 +59,7 @@ export default function Personalized() {
           className="absolute inset-0 -z-20 h-full w-full object-cover"
           loading="eager"
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/55 to-ink/30" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-ink/90 via-ink/55 to-ink/65" />
         <div className="shell w-full pb-16 pt-32">
           <Breadcrumbs
             tone="dark"
@@ -82,6 +80,8 @@ export default function Personalized() {
           </p>
         </div>
       </section>
+
+      <ShopSubnav />
 
       <section className="bg-ivory py-20 text-ink sm:py-28">
         <Container>

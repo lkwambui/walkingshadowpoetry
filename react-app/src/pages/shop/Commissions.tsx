@@ -99,9 +99,7 @@ export default function Commissions() {
         }}
       />
 
-      <ShopSubnav />
-
-      <section className="bg-ink py-16 text-ivory sm:py-20">
+      <section className="bg-ink pb-16 pt-32 text-ivory sm:pb-20 sm:pt-36">
         <Container>
           <Breadcrumbs
             tone="dark"
@@ -126,6 +124,8 @@ export default function Commissions() {
           </div>
         </Container>
       </section>
+
+      <ShopSubnav />
 
       {hasFixedPrice && (
         <section className="bg-brand-tint/20 py-16 text-ink sm:py-20">

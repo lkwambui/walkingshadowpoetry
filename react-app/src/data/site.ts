@@ -26,13 +26,13 @@ export const site = {
 
 export const navLinks = [
   { label: 'Home', path: '/' },
-  { label: 'Shop', path: '/shop' },
   { label: 'Our Story', path: '/about' },
   { label: 'Poetry', path: '/poetry' },
   { label: 'Episodes', path: '/episodes' },
   { label: 'Performances', path: '/performances' },
   { label: 'Gallery', path: '/gallery' },
   { label: 'Journal', path: '/journal' },
+  { label: 'Shop', path: '/shop' },
   { label: 'Contact', path: '/contact' },
 ] as const;
 
