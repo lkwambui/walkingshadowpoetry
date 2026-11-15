@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Menu } from 'lucide-react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Menu, ShoppingBag } from 'lucide-react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { navLinks } from '../../data/site';
 import { cn } from '../../utils/format';
+import { useCart } from '../../hooks/useCart';
 import Button from '../common/Button';
 import MobileMenu from './MobileMenu';
 import Wordmark from './Wordmark';
@@ -12,6 +13,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -65,11 +67,33 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
+            <Link
+              to="/shop/cart"
+              className={cn(
+                'relative flex size-11 items-center justify-center border transition-colors',
+                solid
+                  ? 'border-ink/20 text-ink hover:bg-ink hover:text-ivory'
+                  : 'border-ivory/30 text-ivory hover:bg-ivory hover:text-ink',
+              )}
+              aria-label={`Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
+            >
+              <ShoppingBag className="size-5" strokeWidth={1.4} />
+              {itemCount > 0 && (
+                <span
+                  className={cn(
+                    'absolute -right-1.5 -top-1.5 flex min-w-[1.15rem] items-center justify-center px-1 text-[0.55rem] font-medium tabular-nums',
+                    solid ? 'bg-terracotta text-ivory' : 'bg-brand text-ink',
+                  )}
+                >
+                  {itemCount}
+                </span>
+              )}
+            </Link>
             <Button
               to="/contact"
               variant={solid ? 'dark' : 'outline-light'}
               size="sm"
-              className="hidden sm:inline-flex"
+              className="hidden lg:inline-flex"
             >
               Book a performance
             </Button>

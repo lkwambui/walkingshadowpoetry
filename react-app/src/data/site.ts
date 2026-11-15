@@ -26,6 +26,7 @@ export const site = {
 
 export const navLinks = [
   { label: 'Home', path: '/' },
+  { label: 'Shop', path: '/shop' },
   { label: 'Our Story', path: '/about' },
   { label: 'Poetry', path: '/poetry' },
   { label: 'Episodes', path: '/episodes' },

@@ -1,8 +1,47 @@
+# ---------------------------------------------------------------------------
+# Walking Shadow Poetry — SPA fallback + headless WooCommerce coexistence
+#
+# The React storefront is served from the web root. The WooCommerce install
+# lives under /shop and must keep serving its own REST API, admin and assets.
+# The rules below send customer-facing /shop routes to the SPA while leaving
+# the WordPress backend untouched.
+# ---------------------------------------------------------------------------
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # --- Keep the WordPress backend, REST API and assets on WordPress --------
+  RewriteRule ^shop/wp-json/ - [L]
+  RewriteRule ^shop/wp-admin/ - [L]
+  RewriteRule ^shop/wp-login\.php$ - [L]
+  RewriteRule ^shop/wp-content/ - [L]
+  RewriteRule ^shop/wp-includes/ - [L]
+  RewriteRule ^shop/xmlrpc\.php$ - [L]
+
+  # --- Serve the React storefront for the shop root ------------------------
+  RewriteRule ^shop/?$ /index.html [L]
+
+  # --- Standard SPA fallback ----------------------------------------------
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
+</IfModule>
+
+# ---------------------------------------------------------------------------
+# Performance
+# ---------------------------------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>
