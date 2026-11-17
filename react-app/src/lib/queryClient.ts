@@ -13,7 +13,9 @@ export const queryClient = new QueryClient({
 
 export const queryKeys = {
   products: (params: Record<string, unknown> = {}) => ['products', params] as const,
+  productCollection: (params: Record<string, unknown> = {}) => ['product-collection', params] as const,
   product: (slug: string) => ['product', slug] as const,
+  productReviews: (id: number) => ['product-reviews', id] as const,
   variations: (id: number) => ['product-variations', id] as const,
   categories: () => ['categories'] as const,
   attributes: () => ['attributes'] as const,

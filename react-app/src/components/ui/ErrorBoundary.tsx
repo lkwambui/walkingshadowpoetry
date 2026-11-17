@@ -18,6 +18,19 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Walking Shadow Poetry runtime error', error, info);
+
+    if (/Failed to fetch dynamically imported module|Importing a module script failed/i.test(error.message)) {
+      try {
+        const key = 'wsp.chunk-reload';
+        const last = Number(window.sessionStorage.getItem(key) ?? 0);
+        if (Date.now() - last > 10000) {
+          window.sessionStorage.setItem(key, String(Date.now()));
+          const url = new URL(window.location.href);
+          url.searchParams.set('wsp_reload', String(Date.now()));
+          window.location.replace(url.toString());
+        }
+      } catch {}
+    }
   }
 
   render() {

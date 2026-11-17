@@ -3,7 +3,7 @@
  * Plugin Name:       Walking Shadow Commerce
  * Plugin URI:        https://walkingshadowpoetry.com/shop
  * Description:       Commerce backend for the Walking Shadow Poetry React storefront. Adds M-Pesa (Daraja) payments, poetry commission management, personalized-item persistence, and a newsletter endpoint on top of WooCommerce.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            Walking Shadow Poetry
  * Author URI:        https://walkingshadowpoetry.com
  * License:           GPL-2.0-or-later
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WSC_VERSION', '1.0.0' );
+define( 'WSC_VERSION', '1.1.0' );
 define( 'WSC_PLUGIN_FILE', __FILE__ );
 define( 'WSC_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WSC_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

@@ -47,10 +47,38 @@ export default function FilterBar({
   const [open, setOpen] = useState(false);
 
   const update = (patch: Partial<ShopFilters>) => onChange({ ...filters, ...patch });
-  const activeCount = [filters.category, filters.price, filters.size, filters.colour].filter(Boolean).length;
+  const activeCount = [filters.search, filters.category, filters.price, filters.size, filters.colour].filter(Boolean)
+    .length;
 
-  const reset = () =>
-    onChange({ ...defaultFilters, search: filters.search, category: hideCategory ? '' : filters.category, sort: filters.sort });
+  const reset = () => onChange({ ...defaultFilters, category: hideCategory ? '' : filters.category });
+
+  const activeChips = [
+    filters.search && {
+      key: 'search',
+      label: `Search: ${filters.search}`,
+      clear: () => update({ search: '' }),
+    },
+    filters.category && {
+      key: 'category',
+      label: `Category: ${categories.find((category) => category.slug === filters.category)?.name ?? filters.category}`,
+      clear: () => update({ category: '' }),
+    },
+    filters.price && {
+      key: 'price',
+      label: priceBands.find((band) => band.value === filters.price)?.label ?? filters.price,
+      clear: () => update({ price: '' }),
+    },
+    filters.size && {
+      key: 'size',
+      label: `Size: ${sizes.find((size) => size.slug === filters.size)?.name ?? filters.size}`,
+      clear: () => update({ size: '' }),
+    },
+    filters.colour && {
+      key: 'colour',
+      label: `Colour: ${colours.find((colour) => colour.slug === filters.colour)?.name ?? filters.colour}`,
+      clear: () => update({ colour: '' }),
+    },
+  ].filter((chip): chip is { key: string; label: string; clear: () => void } => Boolean(chip));
 
   const controls = (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -170,14 +198,14 @@ export default function FilterBar({
                 className="inline-flex items-center gap-1.5 text-[0.58rem] uppercase tracking-[0.18em] text-terracotta transition-colors hover:text-brand-deep"
               >
                 <X className="size-3.5" strokeWidth={1.6} />
-                Clear
+                Clear all
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-3">
             {typeof resultCount === 'number' && (
-              <span className="hidden text-[0.58rem] uppercase tracking-[0.18em] text-ink/40 sm:inline">
+              <span className="text-[0.58rem] uppercase tracking-[0.18em] text-ink/40">
                 {resultCount} {resultCount === 1 ? 'piece' : 'pieces'}
               </span>
             )}
@@ -201,6 +229,24 @@ export default function FilterBar({
       </div>
 
       <div className={cn('lg:block', open ? 'mt-6 block' : 'hidden')}>{controls}</div>
+
+      {activeChips.length > 0 && (
+        <ul className="mt-5 flex flex-wrap gap-2" aria-label="Active filters">
+          {activeChips.map((chip) => (
+            <li key={chip.key}>
+              <button
+                type="button"
+                onClick={chip.clear}
+                className="inline-flex items-center gap-2 border border-ink/15 bg-ivory px-3 py-2 text-[0.55rem] uppercase tracking-[0.14em] text-ink/60 transition-colors hover:border-terracotta hover:text-terracotta"
+              >
+                {chip.label}
+                <X className="size-3" strokeWidth={1.8} aria-hidden="true" />
+                <span className="sr-only">Remove filter</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

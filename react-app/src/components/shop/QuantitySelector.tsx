@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { Minus, Plus } from 'lucide-react';
 import { cn } from '../../utils/format';
 
@@ -19,6 +20,7 @@ export default function QuantitySelector({
   label = 'Quantity',
 }: QuantitySelectorProps) {
   const clamp = (next: number) => Math.max(min, Math.min(max, next));
+  const inputId = useId();
 
   return (
     <div className={cn('inline-flex items-center border border-ink/20', className)}>
@@ -31,11 +33,11 @@ export default function QuantitySelector({
       >
         <Minus className="size-3.5" strokeWidth={1.6} />
       </button>
-      <label className="sr-only" htmlFor="quantity-input">
+      <label className="sr-only" htmlFor={inputId}>
         {label}
       </label>
       <input
-        id="quantity-input"
+        id={inputId}
         type="number"
         inputMode="numeric"
         value={value}

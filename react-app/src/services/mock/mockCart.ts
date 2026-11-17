@@ -106,7 +106,13 @@ export function mockAddToCart(input: AddToCartInput): StoreCart {
 
   const quantity = input.quantity ?? 1;
   const variationLabel = input.variation?.map((entry) => entry.value).join(', ') ?? '';
-  const key = `${input.id}-${variationLabel || 'default'}`;
+  const personalizationLabel = input.personalization
+    ? JSON.stringify(input.personalization)
+        .split('')
+        .reduce((hash, character) => (hash * 31 + character.charCodeAt(0)) >>> 0, 7)
+        .toString(36)
+    : '';
+  const key = `${input.id}-${variationLabel || 'default'}${personalizationLabel ? `-${personalizationLabel}` : ''}`;
   const existing = cart.items.find((item) => item.key === key);
   const unitPrice = Number(product.prices.price);
 
@@ -117,13 +123,22 @@ export function mockAddToCart(input: AddToCartInput): StoreCart {
   } else {
     const itemData: StoreCartItem['item_data'] = [];
     if (input.personalization) {
+      Object.entries(input.personalization).forEach(([key, value]) => {
+        const displayValue = value == null ? '' : String(value);
+        if (!displayValue) return;
+        const label = key
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+          .replace(/^./, (character) => character.toUpperCase());
+        itemData.push({ key, value: displayValue, display: `${label}: ${displayValue}` });
+      });
+
       const p = input.personalization;
-      itemData.push(
-        { key: 'recipient', value: p.recipientName, display: `Recipient: ${p.recipientName}` },
-        { key: 'occasion', value: p.occasion, display: `Occasion: ${p.occasion}` },
-        { key: 'tone', value: p.tone, display: `Tone: ${p.tone}` },
-        { key: 'delivery', value: p.deliveryFormat, display: `Delivery: ${p.deliveryFormat}` },
-      );
+      if (p.recipientName) {
+        itemData.unshift({ key: 'recipient', value: p.recipientName, display: `Recipient: ${p.recipientName}` });
+      }
+      if (p.deliveryFormat) {
+        itemData.push({ key: 'delivery', value: p.deliveryFormat, display: `Delivery: ${p.deliveryFormat}` });
+      }
     }
 
     const item: StoreCartItem = {

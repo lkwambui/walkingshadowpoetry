@@ -33,6 +33,8 @@ export interface StoreImage {
   thumbnail: string;
   srcset: string;
   sizes: string;
+  thumbnail_srcset?: string;
+  thumbnail_sizes?: string;
   name: string;
   alt: string;
 }
@@ -76,6 +78,9 @@ export interface StoreProduct {
   images: StoreImage[];
   categories: StoreTerm[];
   tags: StoreTerm[];
+  average_rating?: string;
+  review_count?: number;
+  total_sales?: number;
   attributes: StoreAttribute[];
   variations: { id: number; attributes: { name: string; value: string }[] }[];
   has_options: boolean;
@@ -113,7 +118,8 @@ export interface StoreCartItem {
   };
   images: StoreImage[];
   variation: { attribute: string; value: string }[];
-  item_data: { key: string; value: string; display: string }[];
+  item_data: { key: string; value: string; display: string; raw_key?: string }[];
+  permalink?: string;
   extensions?: Record<string, unknown>;
 }
 
@@ -205,6 +211,21 @@ export interface StoreOrder {
   extensions?: Record<string, unknown>;
 }
 
+export interface StoreProductReview {
+  id: number;
+  date_created: string;
+  name: string;
+  email?: string;
+  rating: number;
+  review: string;
+  verified: boolean;
+}
+
+export interface ProductCollection {
+  items: StoreProduct[];
+  total: number;
+}
+
 export interface ProductQuery {
   page?: number;
   perPage?: number;
@@ -234,12 +255,28 @@ export interface PersonalizationData {
   productKind: 'customized-note' | 'commissioned-poem';
   recipientName: string;
   occasion: string;
-  theme: string;
   tone: string;
-  keyDetails: string;
   length: string;
-  instructions?: string;
   deliveryFormat: string;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  relationship?: string;
+  pronunciation?: string;
+  otherOccasion?: string;
+  message?: string;
+  story?: string;
+  memories?: string;
+  importantDetails?: string;
+  poeticStyle?: string;
+  instructions?: string;
+  surprise?: 'yes' | 'no';
+  preferredDate?: string;
+  dedication?: 'yes' | 'no';
+  dedicationText?: string;
+  privatePoem?: 'yes' | 'no';
+  theme?: string;
+  keyDetails?: string;
 }
 
 export interface CheckoutPayload {
@@ -364,27 +401,48 @@ function safeJson(text: string): unknown {
 
 /* ------------------------------------------------------------- catalogue */
 
+const productParams = (query: ProductQuery): Record<string, unknown> => ({
+  page: query.page ?? 1,
+  per_page: query.perPage ?? 12,
+  search: query.search,
+  category: query.category,
+  tag: query.tag,
+  min_price: query.minPrice,
+  max_price: query.maxPrice,
+  on_sale: query.onSale ? 'true' : undefined,
+  featured: query.featured ? 'true' : undefined,
+  orderby: query.orderby ?? 'date',
+  order: query.order ?? 'desc',
+  stock_status: query.stockStatus,
+  slug: query.slug,
+  attribute: query.attribute,
+  attribute_term: query.attributeTerm,
+});
+
 export async function fetchProducts(query: ProductQuery = {}): Promise<StoreProduct[]> {
   const { data } = await storeRequest<StoreProduct[]>('/products', {
-    params: {
-      page: query.page ?? 1,
-      per_page: query.perPage ?? 12,
-      search: query.search,
-      category: query.category,
-      tag: query.tag,
-      min_price: query.minPrice,
-      max_price: query.maxPrice,
-      on_sale: query.onSale ? 'true' : undefined,
-      featured: query.featured ? 'true' : undefined,
-      orderby: query.orderby ?? 'date',
-      order: query.order ?? 'desc',
-      stock_status: query.stockStatus,
-      slug: query.slug,
-      attribute: query.attribute,
-      attribute_term: query.attributeTerm,
-    },
+    params: productParams(query),
   });
   return data;
+}
+
+/** Catalogue query that also returns WooCommerce's X-WP-Total result count. */
+export async function fetchProductCollection(query: ProductQuery = {}): Promise<ProductCollection> {
+  const { data, headers } = await storeRequest<StoreProduct[]>('/products', {
+    params: productParams(query),
+  });
+  const total = Number(headers.get('X-WP-Total') ?? data.length);
+  return { items: data, total: Number.isFinite(total) ? total : data.length };
+}
+
+export async function fetchProductReviews(
+  productId: number,
+  perPage = 10,
+): Promise<StoreProductReview[]> {
+  const { data } = await storeRequest<StoreProductReview[]>('/products/reviews', {
+    params: { product_id: productId, per_page: perPage, orderby: 'date', order: 'desc' },
+  });
+  return Array.isArray(data) ? data : [];
 }
 
 export async function fetchProductBySlug(slug: string): Promise<StoreProduct | null> {

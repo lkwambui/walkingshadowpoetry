@@ -13,7 +13,7 @@ Target install: `/shop/wp-content/plugins/walking-shadow-commerce/`
 | M-Pesa payment gateway | WooCommerce gateway `walkingshadow_mpesa` |
 | M-Pesa STK push + status | REST routes under `walkingshadow/v1` |
 | Validated Daraja callback | Confirms payment server-side only |
-| Personalized items | Persists `ws_personalization` to cart + order item |
+| Personalized items | Validates `ws_personalization`, persists it to cart line, order item meta, admin and emails |
 | Poetry commissions | `ws_commission` post type with status workflow |
 | Newsletter | Subscriber list with admin overview |
 
@@ -69,6 +69,20 @@ Commissions are created from the storefront enquiry form, which posts to
 `POST /commissions`. The plugin stores the details as post meta, emails the
 studio and the requester, and exposes an editable record under
 **Walking Shadow → Commissions**.
+
+## Personalization workflow
+
+1. The React form submits a camelCase `ws_personalization` object with
+   `POST /wc/store/v1/cart/add-item`.
+2. The plugin validates required fields and choices, allowlists known keys, and
+   caps each value to its field-specific limit.
+3. Sanitized values are attached via
+   `woocommerce_store_api_add_to_cart_data` as `cart_item_data`, so WooCommerce
+   includes them in the cart item key and carries them through checkout.
+4. Cart and checkout line items display each value with a readable label.
+5. At checkout the plugin stores the full payload as `_ws_personalization` and
+   individual `ws_*` fields on the order line item. Labels are normalized for
+   admin order screens, and order emails list personalization under the product.
 
 ## Data and privacy
 

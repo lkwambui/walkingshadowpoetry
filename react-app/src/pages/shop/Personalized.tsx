@@ -6,11 +6,8 @@ import PageTransition from '../../components/common/PageTransition';
 import Reveal from '../../components/common/Reveal';
 import SEO from '../../components/common/SEO';
 import Breadcrumbs from '../../components/common/Breadcrumbs';
-import Button from '../../components/common/Button';
-import ProductGrid from '../../components/shop/ProductGrid';
+import Catalogue from '../../components/shop/Catalogue';
 import ShopSubnav from '../../components/shop/ShopSubnav';
-import ShopEmptyState from '../../components/shop/ShopEmptyState';
-import { useProducts } from '../../hooks/useShopData';
 import { site } from '../../data/site';
 
 const paths = [
@@ -33,8 +30,6 @@ const paths = [
 ];
 
 export default function Personalized() {
-  const noteProducts = useProducts({ category: 'personalized-notes', perPage: 8 });
-
   return (
     <PageTransition>
       <SEO
@@ -122,22 +117,12 @@ export default function Personalized() {
             </div>
 
             <div className="mt-12">
-              {noteProducts.isLoading ? (
-                <ProductGrid products={[]} loading skeletonCount={4} />
-              ) : noteProducts.data && noteProducts.data.length > 0 ? (
-                <ProductGrid products={noteProducts.data} columns={4} />
-              ) : (
-                <ShopEmptyState
-                  eyebrow="Built to order"
-                  title="Every personalized piece is made to order."
-                  description="Choose a note or a commission to begin. Each piece is written individually and priced according to its length and detail."
-                  action={
-                    <Button to="/shop/personalized/notes" variant="dark">
-                      Start with a note
-                    </Button>
-                  }
-                />
-              )}
+              <Catalogue
+                category="personalized-notes"
+                columns={4}
+                emptyTitle="Every personalized piece is made to order."
+                emptyDescription="Choose a note or a commission to begin. Each piece is written individually and priced according to its length and detail."
+              />
             </div>
           </div>
         </Container>

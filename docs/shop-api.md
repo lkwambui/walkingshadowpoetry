@@ -22,6 +22,7 @@ Base: `VITE_STORE_API_URL`. Client: `react-app/src/services/storeApi.ts`.
 | Product by id | `GET /products/{id}` |
 | Variations | `GET /products/{id}/variations` |
 | Categories | `GET /products/categories` |
+| Reviews | `GET /products/reviews?product_id=…` |
 | Attributes | `GET /products/attributes` |
 | Cart | `GET /cart` |
 | Add item | `POST /cart/add-item` |
@@ -47,25 +48,39 @@ or `formatStorePrice(...)`.
 
 ### Personalization
 
-Personalized items (customized notes) send a top-level `ws_personalization`
-object with the add-item request:
+Personalized items send a top-level `ws_personalization` object with the
+add-item request. The plugin reads it from the request and attaches the
+sanitized result to `cart_item_data`, which is the WooCommerce Store API field
+that persists on the cart line and order item:
 
 ```json
 {
-  "id": 42,
+  "id": 74,
   "quantity": 1,
   "ws_personalization": {
-    "recipient": "Amina",
-    "occasion": "birthday",
-    "tone": "warm",
-    "length": "short",
-    "delivery": "digital",
-    "notes": "Please mention her love of jazz."
+    "productKind": "customized-note",
+    "customerName": "Wanjiku",
+    "customerEmail": "wanjiku@example.com",
+    "recipientName": "Amina",
+    "relationship": "Friend",
+    "occasion": "Birthday",
+    "message": "A hopeful, celebratory note.",
+    "story": "We have known each other since university and celebrated every small win together.",
+    "poeticStyle": "Free verse",
+    "tone": "Heartfelt",
+    "length": "Medium (5–8 lines)",
+    "surprise": "yes",
+    "dedication": "no",
+    "privatePoem": "no",
+    "deliveryFormat": "Digital (PDF)"
   }
 }
 ```
 
-The plugin validates and stores this on the cart line, then on the order item.
+The plugin allowlists fields, applies per-field length limits, validates
+required choices, and stores the result as `_ws_personalization` order item
+meta plus named display meta. Cart and order line items show the details, and
+order emails list them under each personalized product.
 
 ### Checkout
 

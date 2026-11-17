@@ -4,20 +4,23 @@ import {
   fetchCategories,
   fetchProductAttributes,
   fetchProductBySlug,
+  fetchProductCollection,
+  fetchProductReviews,
   fetchProducts,
   fetchProductVariations,
   isMockMode,
 } from '../services/storeApi';
-import type { ProductQuery, StoreProduct, StoreTerm } from '../services/storeApi';
+import type { ProductCollection, ProductQuery, StoreProduct, StoreTerm } from '../services/storeApi';
 import { mockCategories, mockProducts, mockVariations } from '../services/mock/catalog';
 
 const MOCK = isMockMode();
 
-function filterMockProducts(query: ProductQuery): StoreProduct[] {
+export function filterMockProducts(query: ProductQuery): StoreProduct[] {
   let items = [...mockProducts];
   if (query.category) {
+    const slugs = query.category.split(',').map((slug) => slug.trim()).filter(Boolean);
     items = items.filter((product) =>
-      product.categories.some((category) => category.slug === query.category),
+      product.categories.some((category) => slugs.includes(category.slug)),
     );
   }
   if (query.featured) items = items.filter((product) => product.id === 101 || product.id === 201 || product.id === 501);
@@ -40,8 +43,29 @@ function filterMockProducts(query: ProductQuery): StoreProduct[] {
     );
   } else if (query.orderby === 'title') {
     items.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (query.orderby === 'date' || query.orderby === 'popularity') {
+    items.sort((a, b) => (query.order === 'asc' ? a.id - b.id : b.id - a.id));
   }
   return items;
+}
+
+export function useProductCollection(query: ProductQuery = {}) {
+  return useQuery<ProductCollection>({
+    queryKey: queryKeys.productCollection(query as Record<string, unknown>),
+    queryFn: () =>
+      MOCK
+        ? Promise.resolve({ items: filterMockProducts(query), total: filterMockProducts(query).length })
+        : fetchProductCollection(query),
+    placeholderData: (previous) => previous,
+  });
+}
+
+export function useProductReviews(productId: number | undefined) {
+  return useQuery({
+    queryKey: queryKeys.productReviews(productId ?? 0),
+    queryFn: () => fetchProductReviews(productId!),
+    enabled: Boolean(productId) && !MOCK,
+  });
 }
 
 export function useProducts(query: ProductQuery = {}) {

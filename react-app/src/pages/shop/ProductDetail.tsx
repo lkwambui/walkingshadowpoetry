@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { CheckCircle2, ChevronRight, Package, RefreshCw, Truck } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Heart, Package, RefreshCw, Star, Truck } from 'lucide-react';
 import Container from '../../components/common/Container';
 import PageTransition from '../../components/common/PageTransition';
 import SEO from '../../components/common/SEO';
@@ -13,8 +13,16 @@ import QuantitySelector from '../../components/shop/QuantitySelector';
 import Price from '../../components/shop/Price';
 import ShopEmptyState from '../../components/shop/ShopEmptyState';
 import ShopSubnav from '../../components/shop/ShopSubnav';
-import { useProduct, useProducts, useProductVariations } from '../../hooks/useShopData';
+import {
+  useProduct,
+  useProductReviews,
+  useProducts,
+  useProductVariations,
+} from '../../hooks/useShopData';
 import { useCart } from '../../hooks/useCart';
+import { useRecentlyViewed } from '../../hooks/useRecentlyViewed';
+import { useWishlist } from '../../hooks/useWishlist';
+import { useShopUi } from '../../context/ShopUiProvider';
 import {
   productIsPersonalized,
   resolveVariationId,
@@ -23,6 +31,7 @@ import {
 } from '../../services/productUtils';
 import type { StoreProduct } from '../../services/storeApi';
 import { site } from '../../data/site';
+import { cn } from '../../utils/format';
 
 function defaultSelection(product: StoreProduct) {
   const selection: Record<string, string> = {};
@@ -37,6 +46,9 @@ function defaultSelection(product: StoreProduct) {
 export default function ProductDetail() {
   const { slug = '' } = useParams();
   const { addItem, isMutating } = useCart();
+  const { openCart } = useShopUi();
+  const wishlist = useWishlist();
+  const { slugs: recentSlugs, record: recordRecent } = useRecentlyViewed();
 
   const productQuery = useProduct(slug);
   const product = productQuery.data ?? null;
@@ -73,6 +85,21 @@ export default function ProductDetail() {
   });
 
   const relatedItems = (related.data ?? []).filter((item) => item.id !== product?.id).slice(0, 4);
+
+  const reviews = useProductReviews(product?.id);
+  const allProducts = useProducts({ perPage: 100 });
+  const recentItems = useMemo(() => {
+    const bySlug = new Map((allProducts.data ?? []).map((item) => [item.slug, item]));
+    return recentSlugs
+      .filter((entry) => entry !== product?.slug)
+      .map((entry) => bySlug.get(entry))
+      .filter((item): item is StoreProduct => Boolean(item))
+      .slice(0, 4);
+  }, [allProducts.data, recentSlugs, product?.slug]);
+
+  useEffect(() => {
+    if (product?.slug) recordRecent(product.slug);
+  }, [product?.slug, recordRecent]);
 
   if (productQuery.isLoading) {
     return (
@@ -124,6 +151,7 @@ export default function ProductDetail() {
       variation,
     });
     setFeedback('Added to cart');
+    openCart();
     window.setTimeout(() => setFeedback(null), 2200);
   };
 
@@ -205,9 +233,33 @@ export default function ProductDetail() {
                   {product.categories[0].name}
                 </Link>
               )}
-              <h1 className="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.02]">
-                {product.name}
-              </h1>
+              <div className="mt-3 flex items-start justify-between gap-4">
+                <h1 className="font-display text-[clamp(2rem,4vw,3.4rem)] leading-[1.02]">
+                  {product.name}
+                </h1>
+                <button
+                  type="button"
+                  onClick={() => wishlist.toggle(product.id)}
+                  aria-label={
+                    wishlist.has(product.id)
+                      ? `Remove ${product.name} from wishlist`
+                      : `Save ${product.name} to wishlist`
+                  }
+                  aria-pressed={wishlist.has(product.id)}
+                  className={cn(
+                    'flex size-11 shrink-0 items-center justify-center border transition-colors',
+                    wishlist.has(product.id)
+                      ? 'border-terracotta bg-terracotta text-ivory'
+                      : 'border-ink/20 text-ink hover:bg-ink hover:text-ivory',
+                  )}
+                >
+                  <Heart
+                    className="size-4"
+                    strokeWidth={1.6}
+                    fill={wishlist.has(product.id) ? 'currentColor' : 'none'}
+                  />
+                </button>
+              </div>
 
               <div className="mt-5 flex items-center gap-4">
                 <Price product={product} size="lg" />
@@ -256,7 +308,11 @@ export default function ProductDetail() {
                     we will write it for them.
                   </p>
                   <div className="mt-5">
-                    <Button to={`/shop/personalized/notes?product=${product.id}`} variant="dark" size="lg">
+                    <Button
+                      to={`/shop/personalized/${product.slug}?product=${product.id}`}
+                      variant="dark"
+                      size="lg"
+                    >
                       Personalize this piece
                     </Button>
                   </div>
@@ -340,6 +396,92 @@ export default function ProductDetail() {
         </section>
       )}
 
+      <section className="border-t border-ink/15 bg-ivory py-16 text-ink sm:py-20">
+        <Container>
+          <div className="grid gap-10 lg:grid-cols-12">
+            <div className="lg:col-span-3">
+              <p className="eyebrow text-terracotta">Words from others</p>
+              <h2 className="mt-3 font-display text-3xl">Reviews</h2>
+              {Number(product.average_rating ?? 0) > 0 && (
+                <div className="mt-5 flex items-center gap-2">
+                  <div className="flex" aria-hidden="true">
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <Star
+                        key={index}
+                        className={cn(
+                          'size-3.5',
+                          index < Math.round(Number(product.average_rating ?? 0))
+                            ? 'fill-brand text-brand'
+                            : 'text-ink/25',
+                        )}
+                        strokeWidth={1.4}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-ink/50">
+                    {Number(product.average_rating).toFixed(1)} · {product.review_count ?? 0} reviews
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="lg:col-span-8 lg:col-start-5">
+              {reviews.isLoading ? (
+                <div className="space-y-6">
+                  {[0, 1].map((index) => (
+                    <div key={index} className="space-y-3 border-b border-ink/10 pb-6">
+                      <div className="h-3 w-28 animate-pulse bg-ink/10" />
+                      <div className="h-4 w-full animate-pulse bg-ink/5" />
+                      <div className="h-3 w-2/3 animate-pulse bg-ink/5" />
+                    </div>
+                  ))}
+                </div>
+              ) : reviews.data && reviews.data.length > 0 ? (
+                <ul className="space-y-8">
+                  {reviews.data.map((review) => (
+                    <li key={review.id} className="border-b border-ink/10 pb-8 last:border-0">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                        <p className="text-sm font-medium text-ink">{review.name}</p>
+                        <div className="flex" aria-label={`${review.rating} out of 5 stars`}>
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <Star
+                              key={index}
+                              className={cn(
+                                'size-3',
+                                index < review.rating ? 'fill-brand text-brand' : 'text-ink/25',
+                              )}
+                              strokeWidth={1.4}
+                            />
+                          ))}
+                        </div>
+                        {review.verified && (
+                          <span className="text-[0.55rem] uppercase tracking-[0.16em] text-green-deep">
+                            Verified
+                          </span>
+                        )}
+                        <time className="text-[0.55rem] uppercase tracking-[0.16em] text-ink/35" dateTime={review.date_created}>
+                          {new Date(review.date_created).toLocaleDateString('en-KE', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </time>
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-ink/65">{review.review}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm leading-relaxed text-ink/55">
+                  No written reviews yet. If this piece becomes part of your story, we would love to hear
+                  about it.
+                </p>
+              )}
+            </div>
+          </div>
+        </Container>
+      </section>
+
       {relatedItems.length > 0 && (
         <section className="bg-ivory py-20 text-ink sm:py-24">
           <Container>
@@ -355,6 +497,17 @@ export default function ProductDetail() {
             </div>
             <div className="mt-12">
               <ProductGrid products={relatedItems} columns={4} />
+            </div>
+          </Container>
+        </section>
+      )}
+
+      {recentItems.length > 0 && (
+        <section className="border-t border-ink/15 bg-brand-tint/20 py-16 text-ink sm:py-20">
+          <Container>
+            <h2 className="font-display text-[clamp(1.6rem,3vw,2.4rem)]">Recently viewed</h2>
+            <div className="mt-10">
+              <ProductGrid products={recentItems} columns={4} />
             </div>
           </Container>
         </section>

@@ -49,8 +49,21 @@ RewriteRule ^shop/wp-login\.php$ - [L]
 RewriteRule ^shop/wp-content/ - [L]
 RewriteRule ^shop/wp-includes/ - [L]
 RewriteRule ^shop/xmlrpc\.php$ - [L]
-RewriteRule ^shop/?$ /index.html [L]
+RewriteRule ^assets/ - [L]
+RewriteRule ^shop/?$ /index.html [E=SPA_HTML:1,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^shop/(.*)$ /index.html [E=SPA_HTML:1,L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [E=SPA_HTML:1,L]
 ```
+
+`index.html` must never be cached. `public/.htaccess` sends
+`Cache-Control: no-store, no-cache, must-revalidate, max-age=0` for it while
+hashed `/assets/*` files remain cacheable. After each deploy, purge LiteSpeed,
+any CDN, and browser caches; otherwise visitors can keep an old `index.html`
+that points to deleted hashed chunks and see MIME/module errors.
 
 > **LiteSpeed note.** The production server runs LiteSpeed, which reads
 > `.htaccess`. After uploading, verify all of the following return the expected
@@ -69,11 +82,13 @@ See `docs/walking-shadow-commerce-plugin.md` for full configuration.
 ## 4. WooCommerce configuration
 
 * Set the store currency to **KES** (Kenyan Shilling).
-* Create product categories and products (the store ships empty).
+* Keep the existing product and category data. The storefront reads all product
+  names, prices, descriptions, images, categories and stock from the Store API.
 * Configure a shipping zone for Kenya with at least one method; checkout reads
   live shipping rates from the Store API.
-* If you want automatic personalization capture, nothing else is required — the
-  plugin reads the `ws_personalization` payload automatically.
+* Upload version **1.1.0** of the plugin or later so personalization is attached
+  to `cart_item_data` correctly. Nothing else is required — the plugin reads the
+  `ws_personalization` payload automatically.
 
 ## 5. Post-deploy verification
 
@@ -82,6 +97,8 @@ See `docs/walking-shadow-commerce-plugin.md` for full configuration.
 | `GET /shop` | React storefront HTML (`id="root"`) |
 | `GET /shop/clothing` | React storefront HTML |
 | `GET /shop/wp-json/wc/store/v1/products` | JSON product list |
+| `GET /shop/wp-json/wc/store/v1/products/categories` | JSON category list |
+| `GET /shop/wp-json/wc/store/v1/products/reviews?product_id=74` | JSON review list |
 | `GET /shop/wp-json/walkingshadow/v1/mpesa/status?order_id=1&order_key=x` | JSON (403/404 is fine — proves the route is live) |
 | `GET /shop/wp-admin/` | WordPress login / admin |
 | `GET /blog` | WordPress content blog |

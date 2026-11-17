@@ -70,15 +70,34 @@ export const clothingCategories = shopCategories.filter((category) => category.k
 export const occasions = [
   'Birthday',
   'Anniversary',
-  'Love',
-  'Friendship',
-  'Appreciation',
+  'Wedding',
+  "Valentine's Day",
+  "Mother's Day",
+  "Father's Day",
   'Graduation',
-  'Condolence',
+  'Appreciation',
   'Apology',
-  'Celebration',
+  'Memorial',
+  'Friendship',
+  'Romantic Gift',
   'Other',
 ] as const;
+
+export const relationships = [
+  'Partner',
+  'Spouse',
+  'Mother',
+  'Father',
+  'Child',
+  'Sibling',
+  'Friend',
+  'Grandparent',
+  'Colleague',
+  'Mentor',
+  'Other',
+] as const;
+
+export const yesNoOptions = ['No', 'Yes'] as const;
 
 export const writingTones = [
   'Romantic',

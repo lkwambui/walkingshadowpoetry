@@ -22,8 +22,9 @@ const Category = lazy(() => import('./pages/shop/Category'));
 const Search = lazy(() => import('./pages/shop/Search'));
 const ProductDetail = lazy(() => import('./pages/shop/ProductDetail'));
 const Personalized = lazy(() => import('./pages/shop/Personalized'));
-const CustomizedNote = lazy(() => import('./pages/shop/CustomizedNote'));
+const PersonalizedProduct = lazy(() => import('./pages/shop/PersonalizedProduct'));
 const Commissions = lazy(() => import('./pages/shop/Commissions'));
+const Wishlist = lazy(() => import('./pages/shop/Wishlist'));
 const Cart = lazy(() => import('./pages/shop/Cart'));
 const Checkout = lazy(() => import('./pages/shop/Checkout'));
 const OrderConfirmation = lazy(() => import('./pages/shop/OrderConfirmation'));
@@ -61,7 +62,9 @@ export default function App() {
             <Route path="/shop/categories/:slug" element={<Category />} />
             <Route path="/shop/products/:slug" element={<ProductDetail />} />
             <Route path="/shop/personalized" element={<Personalized />} />
-            <Route path="/shop/personalized/notes" element={<CustomizedNote />} />
+            <Route path="/shop/personalized/notes" element={<PersonalizedProduct />} />
+            <Route path="/shop/personalized/:slug" element={<PersonalizedProduct />} />
+            <Route path="/shop/wishlist" element={<Wishlist />} />
             <Route path="/shop/commissions" element={<Commissions />} />
             <Route path="/shop/cart" element={<Cart />} />
             <Route path="/shop/checkout" element={<Checkout />} />

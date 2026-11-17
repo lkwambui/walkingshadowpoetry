@@ -17,15 +17,26 @@
   RewriteRule ^shop/wp-content/ - [L]
   RewriteRule ^shop/wp-includes/ - [L]
   RewriteRule ^shop/xmlrpc\.php$ - [L]
+  RewriteRule ^assets/ - [L]
 
-  # --- Serve the React storefront for the shop root ------------------------
-  RewriteRule ^shop/?$ /index.html [L]
-
-  # --- Standard SPA fallback ----------------------------------------------
-  RewriteRule ^index\.html$ - [L]
+  # --- Serve the React storefront for shop routes --------------------------
+  RewriteRule ^shop/?$ /index.html [E=SPA_HTML:1,L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.html [L]
+  RewriteRule ^shop/(.*)$ /index.html [E=SPA_HTML:1,L]
+
+  # --- Standard SPA fallback ----------------------------------------------
+  RewriteRule ^index\.html$ - [E=SPA_HTML:1,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [E=SPA_HTML:1,L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header unset ETag
+  </FilesMatch>
 </IfModule>
 
 # ---------------------------------------------------------------------------
@@ -43,5 +54,4 @@
   ExpiresByType image/png "access plus 1 year"
   ExpiresByType image/jpeg "access plus 1 year"
   ExpiresByType image/webp "access plus 1 year"
-  ExpiresByType font/woff2 "access plus 1 year"
 </IfModule>

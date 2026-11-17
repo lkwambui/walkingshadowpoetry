@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Menu, ShoppingBag } from 'lucide-react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { navLinks } from '../../data/site';
 import { cn } from '../../utils/format';
 import { useCart } from '../../hooks/useCart';
+import { useShopUi } from '../../context/ShopUiProvider';
 import Button from '../common/Button';
 import MobileMenu from './MobileMenu';
 import Wordmark from './Wordmark';
@@ -14,6 +15,7 @@ export default function Navbar() {
   const location = useLocation();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { itemCount } = useCart();
+  const { openCart } = useShopUi();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 32);
@@ -71,15 +73,16 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Link
-              to="/shop/cart"
+            <button
+              type="button"
+              onClick={openCart}
               className={cn(
                 'relative flex size-11 items-center justify-center border transition-colors',
                 solid
                   ? 'border-ink/20 text-ink hover:bg-ink hover:text-ivory'
                   : 'border-ivory/30 text-ivory hover:bg-ivory hover:text-ink',
               )}
-              aria-label={`Cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
+              aria-label={`Open cart, ${itemCount} ${itemCount === 1 ? 'item' : 'items'}`}
             >
               <ShoppingBag className="size-5" strokeWidth={1.4} />
               {itemCount > 0 && (
@@ -92,7 +95,7 @@ export default function Navbar() {
                   {itemCount}
                 </span>
               )}
-            </Link>
+            </button>
             <Button
               to="/contact"
               variant={solid ? 'dark' : 'outline-light'}
